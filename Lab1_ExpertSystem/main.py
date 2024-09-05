@@ -1,11 +1,11 @@
 # TODO: add your imports here:
 from rules import LUNA_GUESTS_RULES
-from production import forward_chain
+from production import forward_chain, backward_chain
 
 if __name__=='__main__':
 
     #TODO: implement your code here!
-    print(forward_chain(LUNA_GUESTS_RULES, ['tim wears baggy clothes', 'tim has small luggage', 'tim is in the group of similar looking people'], verbose=True))
+    print(backward_chain(LUNA_GUESTS_RULES, 'tim is a Sugar Daddy', verbose=True))
     
     # example how to print output:
     # print("Welcome to Expert System! TODO: implement")

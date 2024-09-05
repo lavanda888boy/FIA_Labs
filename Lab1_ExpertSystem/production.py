@@ -47,9 +47,37 @@ def backward_chain(rules, hypothesis, verbose=False):
     Outputs the goal tree from having rules and hyphothesis, works like an "encyclopedia"
     """
 
-    # TODO: you should implement backward_chain algorithm here
+    # If the hypothesis is already in the rules (facts), we are done.
+    if hypothesis in rules:
+        if verbose:
+            print(f"Found {hypothesis} in facts.")
+        return [hypothesis]
 
-    return "TODO: implement backward_chain" #change return
+    goal_tree = []
+    for rule in rules:
+        # Each rule has a condition (antecedent) and an action (consequent)
+        antecedent = rule.antecedent()
+        consequent = rule.consequent()
+
+        # If the rule's consequent matches the hypothesis, try to prove the antecedent.
+        if match(consequent[0], hypothesis):
+            if verbose:
+                print(f"Rule matched for hypothesis: {hypothesis}")
+                print(f"Trying to prove antecedent: {antecedent}")
+
+            # Check if the antecedent can be proven recursively
+            if isinstance(antecedent, AND):
+                subgoals = [backward_chain(rules, subgoal, verbose) for subgoal in antecedent]
+                goal_tree.append(AND(*subgoals))
+            elif isinstance(antecedent, OR):
+                subgoals = [backward_chain(rules, subgoal, verbose) for subgoal in antecedent]
+                goal_tree.append(OR(*subgoals))
+            else:
+                # Single condition antecedent
+                subgoal = backward_chain(rules, antecedent, verbose)
+                goal_tree.append(subgoal)
+
+    return goal_tree or [hypothesis]
 
 
 def instantiate(template, values_dict):
