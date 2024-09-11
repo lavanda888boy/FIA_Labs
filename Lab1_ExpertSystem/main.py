@@ -1,11 +1,12 @@
 # TODO: add your imports here:
 from rules import LUNA_GUESTS_RULES
-from production import forward_chain, backward_chain
+from production import forward_chain, backward_chain, AND, OR
 
 if __name__=='__main__':
 
     #TODO: implement your code here!
-    print(backward_chain(LUNA_GUESTS_RULES, 'tim is a Sugar Daddy', verbose=True))
+    hypo = 'tim is a Sugar Daddy'
+    goal_tree = backward_chain(LUNA_GUESTS_RULES, hypo, hypo.split()[0], verbose=True)
     
     # example how to print output:
     # print("Welcome to Expert System! TODO: implement")

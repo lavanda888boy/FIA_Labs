@@ -1,7 +1,6 @@
 from production import IF, AND, THEN, OR
 
 # TODO: implement your own rules according to the defined goal tree
-# HINT: see an example in the file rules_example_zookeeper.py
 
 LUNA_GUESTS_RULES = (
 
@@ -21,15 +20,15 @@ LUNA_GUESTS_RULES = (
             '(?x) is a rich person supposedly' ),
         THEN( '(?x) is a rich person' )),
    
-    IF( AND( '(?x) is a rich person supposedly',
+    IF( AND( '(?x) is a rich person',
              '(?x) is accompanied by a very young lady' ),
         THEN( '(?x) is a Sugar Daddy' )),
    
-    IF( AND( '(?x) is a rich person supposedly',
+    IF( AND( '(?x) is a rich person',
              '(?x) is live on social media' ),
         THEN( '(?x) is an Influencer' )),
     
-    IF( AND( '(?x) is a rich person supposedly',
+    IF( AND( '(?x) is a rich person',
              '(?x) smokes expensive cigars' ),
         THEN( '(?x) is a Drug Dealer' )),
     

@@ -42,7 +42,7 @@ def forward_chain(rules, data, apply_only_one=False, verbose=False):
     return data
 
 
-def backward_chain(rules, hypothesis, verbose=False):
+def backward_chain(rules, hypothesis, examined_person, verbose=False, depth=0):
     """
     Outputs the goal tree from having rules and hyphothesis, works like an "encyclopedia"
     """
@@ -62,19 +62,29 @@ def backward_chain(rules, hypothesis, verbose=False):
         # If the rule's consequent matches the hypothesis, try to prove the antecedent.
         if match(consequent[0], hypothesis):
             if verbose:
-                print(f"Rule matched for hypothesis: {hypothesis}")
-                print(f"Trying to prove antecedent: {antecedent}")
+                hypothesis = re.sub(r'\(\?x\)', examined_person, hypothesis)
+                condits = [re.sub(r'\(\?x\)', examined_person, condition) for condition in antecedent.conditions()]
+
+                print(f"{' ' * depth}- {hypothesis}")
+                depth += 2
+
+                if 'AND' in str(type(antecedent)):
+                    print(f"{' ' * depth}- {condits[0]} and {condits[1]}")
+                else:
+                    print(f"{' ' * depth}- {condits[0]}\n{' ' * depth}- {condits[1]}")
+                
+                depth += 2
 
             # Check if the antecedent can be proven recursively
             if isinstance(antecedent, AND):
-                subgoals = [backward_chain(rules, subgoal, verbose) for subgoal in antecedent]
+                subgoals = [backward_chain(rules, subgoal, examined_person, verbose, depth) for subgoal in antecedent]
                 goal_tree.append(AND(*subgoals))
             elif isinstance(antecedent, OR):
-                subgoals = [backward_chain(rules, subgoal, verbose) for subgoal in antecedent]
+                subgoals = [backward_chain(rules, subgoal, examined_person, verbose, depth) for subgoal in antecedent]
                 goal_tree.append(OR(*subgoals))
             else:
                 # Single condition antecedent
-                subgoal = backward_chain(rules, antecedent, verbose)
+                subgoal = backward_chain(rules, antecedent, verbose, depth)
                 goal_tree.append(subgoal)
 
     return goal_tree or [hypothesis]
