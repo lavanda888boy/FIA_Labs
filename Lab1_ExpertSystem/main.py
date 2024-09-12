@@ -1,23 +1,14 @@
 # TODO: add your imports here:
 from rules import LUNA_GUESTS_RULES
 from production import forward_chain, backward_chain, AND, OR
+from utils import QuestionGenerator
+from expert_system import ExpertSystem
 
 if __name__=='__main__':
 
     #TODO: implement your code here!
-    hypo = 'tim is a Sugar Daddy'
-    goal_tree = backward_chain(LUNA_GUESTS_RULES, hypo, hypo.split()[0], verbose=True)
     
-    # example how to print output:
-    # print("Welcome to Expert System! TODO: implement")
+    print("Welcome to Luna City Tourist Expert System!")
 
-    # # an example how to read input:
-    # input_name = input("please write your name:\n")
-
-    # print("Hello, ", input_name, "!")
-
-    # # example how to read a numeric input:
-    # input_age = int(input("what is your age?\n"))
-    # print("Your age is", input_age)
-
-    # print("Great! Now please implement the code for the lab :) ")
+    es = ExpertSystem()
+    es.traverse_goal_tree_interactively()

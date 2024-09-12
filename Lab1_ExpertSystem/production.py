@@ -21,11 +21,11 @@ except NameError:
 def forward_chain(rules, data, apply_only_one=False, verbose=False):
     """
     Apply a list of IF-expressions (rules) through a set of data
-    in order.  Return the modified data set that results from the
+    in order. Return the modified data set that results from the
     rules.
 
     Set apply_only_one=True to get the behavior we describe in
-    class.  When it's False, a rule that fires will do so for
+    class. When it's False, a rule that fires will do so for
     _all_ possible bindings of its variables at the same time,
     making the code considerably more efficient. In the end, only
     DELETE rules will act differently.
@@ -39,7 +39,7 @@ def forward_chain(rules, data, apply_only_one=False, verbose=False):
             if set(data) != set(old_data):
                 break
 
-    return data
+    return set(data)
 
 
 def backward_chain(rules, hypothesis, examined_person, verbose=False, depth=0):
@@ -55,7 +55,6 @@ def backward_chain(rules, hypothesis, examined_person, verbose=False, depth=0):
 
     goal_tree = []
     for rule in rules:
-        # Each rule has a condition (antecedent) and an action (consequent)
         antecedent = rule.antecedent()
         consequent = rule.consequent()
 
@@ -65,7 +64,7 @@ def backward_chain(rules, hypothesis, examined_person, verbose=False, depth=0):
                 hypothesis = re.sub(r'\(\?x\)', examined_person, hypothesis)
                 condits = [re.sub(r'\(\?x\)', examined_person, condition) for condition in antecedent.conditions()]
 
-                print(f"{' ' * depth}- {hypothesis}")
+                print(f"{' ' * depth}? {hypothesis}")
                 depth += 2
 
                 if 'AND' in str(type(antecedent)):
@@ -77,14 +76,14 @@ def backward_chain(rules, hypothesis, examined_person, verbose=False, depth=0):
 
             # Check if the antecedent can be proven recursively
             if isinstance(antecedent, AND):
-                subgoals = [backward_chain(rules, subgoal, examined_person, verbose, depth) for subgoal in antecedent]
+                subgoals = [backward_chain(rules, subgoal, examined_person, verbose) for subgoal in antecedent]
                 goal_tree.append(AND(*subgoals))
             elif isinstance(antecedent, OR):
-                subgoals = [backward_chain(rules, subgoal, examined_person, verbose, depth) for subgoal in antecedent]
+                subgoals = [backward_chain(rules, subgoal, examined_person, verbose) for subgoal in antecedent]
                 goal_tree.append(OR(*subgoals))
             else:
                 # Single condition antecedent
-                subgoal = backward_chain(rules, antecedent, verbose, depth)
+                subgoal = backward_chain(rules, antecedent, verbose)
                 goal_tree.append(subgoal)
 
     return goal_tree or [hypothesis]

@@ -113,3 +113,35 @@ def AIStringVars(AIStr):
     # This is not the fastest way of doing things, but
     # it is probably the most explicit and robust
     return set([ AIRegex.sub(r'\1', x) for x in AIRegex.findall(AIStr) ])
+
+class QuestionGenerator:
+
+    """
+    This is the class with methods for generating questions
+    dynamically based on the facts. The questions are of 3 types:
+    yes/no, multiple choice, user input.
+    """
+
+    question_placeholder = 'the person'
+    
+    def __init__(self):
+        pass
+
+    def convert_verb_to_infinitive(self, verb):
+        if verb == 'has':
+            return 'have'
+        else:
+            return verb[:-1]
+
+
+    def generate_yesno_question(self, condition):
+        words = condition.split()
+        verb = words[1]
+
+        if verb.startswith('is'):
+            question = f"Is {self.question_placeholder} {' '.join(words[2:])}?"
+        else:
+            question = f"Does {self.question_placeholder} {self.convert_verb_to_infinitive(verb)} " + \
+                f"{' '.join(words[2:])}?"
+        
+        return question
