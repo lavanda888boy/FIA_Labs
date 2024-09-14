@@ -70,7 +70,7 @@ def backward_chain(rules, hypothesis, examined_person, verbose=False, depth=0):
                 if 'AND' in str(type(antecedent)):
                     print(f"{' ' * depth}- {condits[0]} and {condits[1]}")
                 else:
-                    print(f"{' ' * depth}- {condits[0]}\n{' ' * depth}- {condits[1]}")
+                    print(f"{' ' * depth}- {condits[0]} or\n{' ' * depth}- {condits[1]}")
                 
                 depth += 2
 

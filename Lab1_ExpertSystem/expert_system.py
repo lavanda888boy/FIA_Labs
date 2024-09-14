@@ -1,10 +1,11 @@
 from rules import LUNA_GUESTS_RULES
-from production import forward_chain
+from production import forward_chain, backward_chain
 from utils import QuestionGenerator
 
 class ExpertSystem:
 
     def __init__(self):
+        self.actions = []
         self.leaf_rules = []
         self.intermediary_rules = []
         self.hypotheses = []
@@ -22,6 +23,26 @@ class ExpertSystem:
             
             if not invalid_action:
                 self.hypotheses.append(action)
+
+    
+    def get_person_category_encyclopedia_view(self):
+        if len(self.actions) == 0:
+            self.actions = [rule._action[0] for rule in LUNA_GUESTS_RULES]
+
+        if len(self.hypotheses) == 0:
+            self.identify_hypotheses(self.actions)
+
+        hypothesis = input("\nEnter your hypothesis (for example, 'Tim is a Student'): ")
+        words = hypothesis.split()
+        words[0] = '(?x)'
+        hypothesis_action = ' '.join(words)
+
+        while hypothesis_action not in self.hypotheses:
+            print("\nThe system does not recognize the hypothesis")
+            hypothesis = input("\nTry again (for example, 'Tim is a Student'): ")
+
+        print()
+        backward_chain(LUNA_GUESTS_RULES, hypothesis, hypothesis.split()[0], verbose=True)
 
 
     def identify_leaf_and_intermediary_rules(self, actions):
@@ -47,9 +68,13 @@ class ExpertSystem:
 
 
     def traverse_goal_tree_interactively(self):
-        actions = [rule._action[0] for rule in LUNA_GUESTS_RULES]
-        self.identify_hypotheses(actions)
-        self.identify_leaf_and_intermediary_rules(actions)
+        if len(self.actions) == 0:
+            self.actions = [rule._action[0] for rule in LUNA_GUESTS_RULES]
+
+        if len(self.hypotheses) == 0:
+            self.identify_hypotheses(self.actions)
+
+        self.identify_leaf_and_intermediary_rules(self.actions)
 
         while True: 
             existing_fact = None
