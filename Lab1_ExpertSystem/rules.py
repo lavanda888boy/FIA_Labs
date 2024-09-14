@@ -16,7 +16,7 @@ LUNA_GUESTS_RULES = (
              '(?x) has small luggage' ),
         THEN( '(?x) is a poor person' )),
     
-    IF( OR( '(?x) is a rich person supposedly', 
+    IF( AND( '(?x) is a rich person supposedly', 
             '(?x) has personal interspace vehicle'),
         THEN( '(?x) is a rich person' )),
    

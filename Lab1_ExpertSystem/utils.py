@@ -146,3 +146,9 @@ class QuestionGenerator:
                 f"{' '.join(words[2:])}?"
         
         return question
+    
+    def generate_multiple_choice_question(self, conditions):
+        pass
+
+    def generate_user_input_question(self, fact):
+        pass

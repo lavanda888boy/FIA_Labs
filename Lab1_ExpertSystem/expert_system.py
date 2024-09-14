@@ -55,12 +55,17 @@ class ExpertSystem:
             existing_fact = None
             current_rule = self.get_a_new_unchecked_rule(self.leaf_rules)
 
+            if current_rule is None:
+                print("\nThe person cannot be identified by the system")
+                return
+
             while current_rule is not None:
                 facts = self.verify_rule_conditions_fulfillment(current_rule, existing_fact)
+
                 new_facts = forward_chain(LUNA_GUESTS_RULES, facts)
+                self.mark_rule_as_checked(current_rule)
 
                 try:
-                    self.mark_rule_as_checked(current_rule)
                     intermediary_fact = (new_facts - facts).pop()
 
                     if intermediary_fact in self.hypotheses:
@@ -74,7 +79,7 @@ class ExpertSystem:
                     if current_rule['leaf']:
                         break
                     else:
-                        current_rule = self.get_a_new_unchecked_rule(self.intermediary_rules, facts[0])
+                        current_rule = self.get_a_new_unchecked_rule(self.intermediary_rules, list(facts)[0])
 
 
     def verify_rule_conditions_fulfillment(self, rule, existing_fact):
