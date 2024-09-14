@@ -114,6 +114,7 @@ def AIStringVars(AIStr):
     # it is probably the most explicit and robust
     return set([ AIRegex.sub(r'\1', x) for x in AIRegex.findall(AIStr) ])
 
+
 class QuestionGenerator:
 
     """
@@ -134,7 +135,7 @@ class QuestionGenerator:
             return verb[:-1]
 
 
-    def generate_yesno_question(self, condition):
+    def generate_yes_no_question(self, condition):
         words = condition.split()
         verb = words[1]
 
