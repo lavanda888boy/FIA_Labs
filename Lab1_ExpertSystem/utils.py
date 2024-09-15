@@ -147,8 +147,18 @@ class QuestionGenerator:
         
         return question
     
+
     def generate_multiple_choice_question(self, conditions):
-        pass
+        question = "The person you are trying to identify...\n\n"
+        
+        index = 1
+        for condition in conditions:
+            question += f"{index}. ...{' '.join(condition.split()[1:])}\n"
+            index += 1
+
+        question += f"{index}. None of the given options"
+
+        return question
 
     def generate_user_input_question(self, fact):
         pass

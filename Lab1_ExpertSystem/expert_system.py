@@ -67,6 +67,17 @@ class ExpertSystem:
         return None
 
 
+    def get_list_of_unchecked_rules(self, rules, existing_fact):
+        aggregated_rules = []
+
+        for rule in rules:
+            if not rule['checked']:
+                if existing_fact in rule['rule']._conditional.conditions():
+                    aggregated_rules.append(rule)
+
+        return aggregated_rules
+
+
     def traverse_goal_tree_interactively(self):
         if len(self.actions) == 0:
             self.actions = [rule._action[0] for rule in LUNA_GUESTS_RULES]
@@ -83,10 +94,15 @@ class ExpertSystem:
             if current_rule is None:
                 print("\nThe person cannot be identified by the system")
                 return
+            
+            choice_facts = None
 
             while current_rule is not None:
-                facts = self.verify_rule_conditions_fulfillment(current_rule, existing_fact)
-
+                if choice_facts is not None:
+                    facts = choice_facts
+                else:
+                    facts = self.verify_single_condition_fulfillment(current_rule, existing_fact)
+                
                 new_facts = forward_chain(LUNA_GUESTS_RULES, facts)
                 self.mark_rule_as_checked(current_rule)
 
@@ -98,7 +114,14 @@ class ExpertSystem:
                         return
                     else:
                         existing_fact = intermediary_fact
-                        current_rule = self.get_a_new_unchecked_rule(self.intermediary_rules, intermediary_fact)
+                        curr_rules = self.get_list_of_unchecked_rules(self.intermediary_rules, existing_fact)
+
+                        if len(curr_rules) > 1:
+                            choice_facts = self.verify_multiple_conditions_fulfillment(curr_rules, existing_fact)
+                            for rule in curr_rules:
+                                self.mark_rule_as_checked(rule)
+                        else:
+                            current_rule = curr_rules[0]
 
                 except (KeyError):
                     if current_rule['leaf']:
@@ -107,7 +130,7 @@ class ExpertSystem:
                         current_rule = self.get_a_new_unchecked_rule(self.intermediary_rules, list(facts)[0])
 
 
-    def verify_rule_conditions_fulfillment(self, rule, existing_fact):
+    def verify_single_condition_fulfillment(self, rule, existing_fact):
         facts = set()
         conditions = rule['rule']._conditional.conditions()
 
@@ -117,11 +140,11 @@ class ExpertSystem:
             if 'OR' in str(type(rule['rule']._conditional)):
                 return facts
             
-            response = self.ask_conditional_question(conditions[1])
+            response = self.ask_single_choice_question(conditions[1])
             if response.startswith("Yes"):
                 facts.add(conditions[1])
         else:
-            first_response = self.ask_conditional_question(conditions[0])
+            first_response = self.ask_single_choice_question(conditions[0])
             if first_response.startswith("Yes"):
                 facts.add(conditions[0])
                 
@@ -131,20 +154,47 @@ class ExpertSystem:
                 if 'AND' in str(type(rule['rule']._conditional)):
                     return facts
                 
-            second_response = self.ask_conditional_question(conditions[1])
+            second_response = self.ask_single_choice_question(conditions[1])
             if second_response.startswith("Yes"):
                 facts.add(conditions[1])
         
         return facts
+    
+
+    def verify_multiple_conditions_fulfillment(self, rules, existing_fact):
+        facts = set()
+        facts.add(existing_fact)
+
+        conditions = []
+        for rule in rules:
+            conditions.append(rule['rule']._conditional.conditions()[1])
+
+        response = self.ask_multiple_choice_question(conditions)
+
+        if response != len(conditions) + 1:
+            facts.add(conditions[response - 1])
+
+        return facts
 
  
-    def ask_conditional_question(self, condition):
+    def ask_single_choice_question(self, condition):
         question = self.question_generator.generate_yes_no_question(condition)
         print(f"\n{question}")
         user_response = input("\nYes/No? ")
 
         while (not user_response.startswith("Yes")) and (not user_response.startswith("No")):
             user_response = input("\nYes/No? ")
+        
+        return user_response
+    
+
+    def ask_multiple_choice_question(self, conditions):
+        question = self.question_generator.generate_multiple_choice_question(conditions)
+        print(f"\n{question}")
+        user_response = int(input("\nChoose an option: "))
+
+        while not user_response in [option for option in range(1, len(conditions) + 2)]:
+            user_response = int(input("\nChoose an option: "))
         
         return user_response
     
