@@ -160,5 +160,10 @@ class QuestionGenerator:
 
         return question
 
-    def generate_user_input_question(self, fact):
-        pass
+
+    def generate_user_input_question(self):
+        question = "Provide an additional insight about the person.\n"
+        question += "For example, 'is live on social media'."
+
+        return question
+

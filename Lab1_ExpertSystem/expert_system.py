@@ -2,6 +2,8 @@ from rules import LUNA_GUESTS_RULES
 from production import forward_chain, backward_chain
 from utils import QuestionGenerator
 
+from random import randint
+
 class ExpertSystem:
 
     def __init__(self):
@@ -169,10 +171,20 @@ class ExpertSystem:
         for rule in rules:
             conditions.append(rule['rule']._conditional.conditions()[1])
 
-        response = self.ask_multiple_choice_question(conditions)
+        question_choice = randint(1, 3)
 
-        if response != len(conditions) + 1:
-            facts.add(conditions[response - 1])
+        if question_choice != 1:
+            response = self.ask_multiple_choice_question(conditions)
+
+            if response != len(conditions) + 1:
+                facts.add(conditions[response - 1])
+        else:
+            response = self.ask_user_input_question()
+
+            for condition in conditions:
+                if condition.endswith(response):
+                    facts.add(condition)
+                    break
 
         return facts
 
@@ -196,6 +208,14 @@ class ExpertSystem:
         while not user_response in [option for option in range(1, len(conditions) + 2)]:
             user_response = int(input("\nChoose an option: "))
         
+        return user_response
+    
+
+    def ask_user_input_question(self):
+        question = self.question_generator.generate_user_input_question()
+        print(f"\n{question}")
+        user_response = input("\nYour insight: ")
+
         return user_response
     
 
