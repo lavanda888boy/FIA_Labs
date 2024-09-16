@@ -15,5 +15,5 @@ if __name__=='__main__':
         elif request == 2:
             es.get_person_category_encyclopedia_view()
         else:
-            print("\nThank you for using out expert system")
+            print("\nThank you for using our expert system")
             break

@@ -42,6 +42,9 @@ class ExpertSystem:
         while hypothesis_action not in self.hypotheses:
             print("\nThe system does not recognize the hypothesis")
             hypothesis = input("\nTry again (for example, 'Tim is a Student'): ")
+            words = hypothesis.split()
+            words[0] = '(?x)'
+            hypothesis_action = ' '.join(words)
 
         print()
         backward_chain(LUNA_GUESTS_RULES, hypothesis, hypothesis.split()[0], verbose=True)
@@ -214,7 +217,7 @@ class ExpertSystem:
     def ask_user_input_question(self):
         question = self.question_generator.generate_user_input_question()
         print(f"\n{question}")
-        user_response = input("\nYour insight: ")
+        user_response = input("\nYour insight: the person ")
 
         return user_response
     

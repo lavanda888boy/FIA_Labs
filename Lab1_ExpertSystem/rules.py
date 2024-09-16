@@ -1,7 +1,5 @@
 from production import IF, AND, THEN, OR
 
-# TODO: implement your own rules according to the defined goal tree
-
 LUNA_GUESTS_RULES = (
 
     IF( OR( '(?x) floats in the air',

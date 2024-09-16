@@ -124,9 +124,6 @@ class QuestionGenerator:
     """
 
     question_placeholder = 'the person'
-    
-    def __init__(self):
-        pass
 
     def convert_verb_to_infinitive(self, verb):
         if verb == 'has':
@@ -162,7 +159,7 @@ class QuestionGenerator:
 
 
     def generate_user_input_question(self):
-        question = "Provide an additional insight about the person.\n"
+        question = f"Provide an additional insight about {self.question_placeholder}.\n"
         question += "For example, 'is live on social media'."
 
         return question
