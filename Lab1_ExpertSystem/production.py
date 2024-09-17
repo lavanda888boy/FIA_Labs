@@ -64,7 +64,7 @@ def backward_chain(rules, hypothesis, examined_person, verbose=False, depth=0):
                 hypothesis = re.sub(r'\(\?x\)', examined_person, hypothesis)
                 condits = [re.sub(r'\(\?x\)', examined_person, condition) for condition in antecedent.conditions()]
 
-                print(f"{' ' * depth}? {hypothesis}")
+                print(f"{' ' * depth}* {hypothesis}")
                 depth += 2
 
                 if 'AND' in str(type(antecedent)):
