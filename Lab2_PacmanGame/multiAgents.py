@@ -152,49 +152,16 @@ class MinimaxAgent(MultiAgentSearchAgent):
         return bestAction
     
 
-    def distanceToNearestPellet(self, gameState):
-          pacmanPos = gameState.getPacmanPosition()
-          food = gameState.getFood()
-          minDistance = float('inf')
-
-          for x in range(food.width):
-              for y in range(food.height):
-                  if food[x][y]:
-                      distance = manhattanDistance(pacmanPos, (x, y))
-
-                      if distance < minDistance:
-                          minDistance = distance
-
-          return minDistance
-
-
-    def distanceToNearestGhost(self, gameState):
-        pacmanPos = gameState.getPacmanPosition()
-        ghostPositions = gameState.getGhostPositions()
-        minDistance = float('inf')
-
-        for ghostPos in ghostPositions:
-            distance = manhattanDistance(pacmanPos, ghostPos)
-
-            if distance < minDistance:
-                minDistance = distance
-
-        return minDistance
-
-
-    def evaluationFunction(self, gameState):
-        return self.distanceToNearestPellet(gameState) - self.distanceToNearestGhost(gameState)
-
-
     def minimax(self, agentIndex, depth, gameState):
         if depth == 0 or gameState.isWin() or gameState.isLose():
-            return self.evaluationFunction(gameState)
+            return basicEvaluationFunction(gameState)
 
         numAgents = gameState.getNumAgents()
         nextAgent = (agentIndex + 1) % numAgents
         nextDepth = depth - 1 if nextAgent == 0 else depth
 
         legalActions = gameState.getLegalActions(agentIndex)
+
         if agentIndex == 0:
             return max(self.minimax(nextAgent, nextDepth, gameState.generateSuccessor(agentIndex, action)) for action in legalActions)
         else:
@@ -205,12 +172,57 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
     """
       Here is the place to define your Alpha-Beta Pruning Algorithm
     """
-
+    
     def getAction(self, gameState):
-        """
-          Your code here
-        """
-        pass
+        legalActions = gameState.getLegalActions(0)
+        bestAction = None
+        alpha = float('-inf')
+        beta = float('inf')
+        bestValue = float('-inf')
+
+        for action in legalActions:
+            value = self.alphaBeta(1, self.depth, gameState.generateSuccessor(0, action), alpha, beta)
+
+            if value > bestValue:
+                bestValue = value
+                bestAction = action
+            alpha = max(alpha, bestValue)
+
+        return bestAction
+    
+
+    def alphaBeta(self, agentIndex, depth, gameState, alpha, beta):
+        if depth == 0 or gameState.isWin() or gameState.isLose():
+            return self.evaluationFunction(gameState)
+
+        numAgents = gameState.getNumAgents()
+        nextAgent = (agentIndex + 1) % numAgents
+        nextDepth = depth - 1 if nextAgent == 0 else depth
+
+        legalActions = gameState.getLegalActions(agentIndex)
+        
+        if agentIndex == 0:
+            value = float('-inf')
+
+            for action in legalActions:
+                value = max(value, self.alphaBeta(nextAgent, nextDepth, gameState.generateSuccessor(agentIndex, action), alpha, beta))
+                alpha = max(alpha, value)
+
+                if alpha >= beta:
+                    break
+                
+            return value
+        else:
+            value = float('inf')
+
+            for action in legalActions:
+                value = min(value, self.alphaBeta(nextAgent, nextDepth, gameState.generateSuccessor(agentIndex, action), alpha, beta))
+                beta = min(beta, value)
+
+                if alpha >= beta:
+                    break
+                
+            return value
 
 
 class AStarMinimaxAgent(MultiAgentSearchAgent):
@@ -235,6 +247,40 @@ class AStarAlphaBetaAgent(MultiAgentSearchAgent):
           Your code here
         """
         pass
+    
+
+def basicEvaluationFunction(currentGameState):
+    
+    def distanceToNearestPellet(gameState):
+        pacmanPos = gameState.getPacmanPosition()
+        food = gameState.getFood()
+        minDistance = float('inf')
+
+        for x in range(food.width):
+            for y in range(food.height):
+                if food[x][y]:
+                    distance = manhattanDistance(pacmanPos, (x, y))
+
+                    if distance < minDistance:
+                        minDistance = distance
+
+        return minDistance
+
+
+    def distanceToNearestGhost(gameState):
+        pacmanPos = gameState.getPacmanPosition()
+        ghostPositions = gameState.getGhostPositions()
+        minDistance = float('inf')
+
+        for ghostPos in ghostPositions:
+            distance = manhattanDistance(pacmanPos, ghostPos)
+
+            if distance < minDistance:
+                minDistance = distance
+
+        return minDistance
+
+    return distanceToNearestPellet(currentGameState) - distanceToNearestGhost(currentGameState)
 
 
 def betterEvaluationFunction(currentGameState):
