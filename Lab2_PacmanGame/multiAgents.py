@@ -123,7 +123,7 @@ def scoreEvaluationFunction(currentGameState):
 class MultiAgentSearchAgent(Agent):
     """
       This class provides some common elements to all of your
-      multi-agent searchers.  Any methods defined here will be available
+      multi-agent searchers. Any methods defined here will be available
       to the MinimaxPacmanAgent, AlphaBetaPacmanAgent & ExpectimaxPacmanAgent.
 
       You *do not* need to make any changes here, but you can if you want to
@@ -147,26 +147,58 @@ class MinimaxAgent(MultiAgentSearchAgent):
     """
 
     def getAction(self, gameState):
-        """
-          Returns the minimax action from the current gameState using self.depth
-          and self.evaluationFunction.
+        legalActions = gameState.getLegalActions(0)
+        bestAction = max(legalActions, key=lambda action: self.minimax(1, self.depth, gameState.generateSuccessor(0, action)))
+        return bestAction
+    
 
-          Here are some method calls that might be useful when implementing minimax.
+    def distanceToNearestPellet(self, gameState):
+          pacmanPos = gameState.getPacmanPosition()
+          food = gameState.getFood()
+          minDistance = float('inf')
 
-          gameState.getLegalActions(agentIndex):
-            Returns a list of legal actions for an agent
-            agentIndex=0 means Pacman, ghosts are >= 1
+          for x in range(food.width):
+              for y in range(food.height):
+                  if food[x][y]:
+                      distance = manhattanDistance(pacmanPos, (x, y))
 
-          gameState.generateSuccessor(agentIndex, action):
-            Returns the successor game state after an agent takes an action
+                      if distance < minDistance:
+                          minDistance = distance
 
-          gameState.getNumAgents():
-            Returns the total number of agents in the game
-        """
-        """
-            Your code here
-        """
-        pass
+          return minDistance
+
+
+    def distanceToNearestGhost(self, gameState):
+        pacmanPos = gameState.getPacmanPosition()
+        ghostPositions = gameState.getGhostPositions()
+        minDistance = float('inf')
+
+        for ghostPos in ghostPositions:
+            distance = manhattanDistance(pacmanPos, ghostPos)
+
+            if distance < minDistance:
+                minDistance = distance
+
+        return minDistance
+
+
+    def evaluationFunction(self, gameState):
+        return self.distanceToNearestPellet(gameState) - self.distanceToNearestGhost(gameState)
+
+
+    def minimax(self, agentIndex, depth, gameState):
+        if depth == 0 or gameState.isWin() or gameState.isLose():
+            return self.evaluationFunction(gameState)
+
+        numAgents = gameState.getNumAgents()
+        nextAgent = (agentIndex + 1) % numAgents
+        nextDepth = depth - 1 if nextAgent == 0 else depth
+
+        legalActions = gameState.getLegalActions(agentIndex)
+        if agentIndex == 0:
+            return max(self.minimax(nextAgent, nextDepth, gameState.generateSuccessor(agentIndex, action)) for action in legalActions)
+        else:
+            return min(self.minimax(nextAgent, nextDepth, gameState.generateSuccessor(agentIndex, action)) for action in legalActions)
 
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
@@ -251,4 +283,3 @@ def betterEvaluationFunction(currentGameState):
 
 # Abbreviation
 better = betterEvaluationFunction
-
