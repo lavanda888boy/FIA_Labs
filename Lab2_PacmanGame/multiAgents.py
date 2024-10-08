@@ -146,6 +146,7 @@ def scoreEvaluationFunction(currentGameState):
 
         return minDistance
     
+
     def pelletNumberPerRegionParameter(gameState, regionSize=5):
       pacmanPos = gameState.getPacmanPosition()
       food = gameState.getFood()
@@ -231,15 +232,38 @@ class MinimaxAgent(MultiAgentSearchAgent):
       Here is the place to define your MiniMax Algorithm
     """
 
+    def __init__(self, evalFn='scoreEvaluationFunction', depth='2'):
+        super().__init__(evalFn, depth)
+        self.transpositionTable = {}
+
+
     def getAction(self, gameState):
-        legalActions = gameState.getLegalActions(0)
-        bestAction = max(legalActions, key=lambda action: self.minimax(1, self.depth, gameState.generateSuccessor(0, action)))
+        bestAction = None
+        bestScore = float('-inf')
+        
+        for currentDepth in range(1, self.depth + 1):
+            self.transpositionTable.clear()
+            
+            for action in gameState.getLegalActions(0):
+                score = self.minimax(1, currentDepth, gameState.generateSuccessor(0, action))
+                
+                if score > bestScore:
+                    bestScore = score
+                    bestAction = action
+        
         return bestAction
     
 
     def minimax(self, agentIndex, depth, gameState):
+        stateKey = (agentIndex, depth, gameState)
+
+        if stateKey in self.transpositionTable:
+            return self.transpositionTable[stateKey]
+
         if depth == 0 or gameState.isWin() or gameState.isLose():
-            return self.evaluationFunction(gameState)
+            score = self.evaluationFunction(gameState)
+            self.transpositionTable[stateKey] = score
+            return score
 
         numAgents = gameState.getNumAgents()
         nextAgent = (agentIndex + 1) % numAgents
@@ -248,9 +272,12 @@ class MinimaxAgent(MultiAgentSearchAgent):
         legalActions = gameState.getLegalActions(agentIndex)
 
         if agentIndex == 0:
-            return max(self.minimax(nextAgent, nextDepth, gameState.generateSuccessor(agentIndex, action)) for action in legalActions)
+            score = max(self.minimax(nextAgent, nextDepth, gameState.generateSuccessor(agentIndex, action)) for action in legalActions)
         else:
-            return min(self.minimax(nextAgent, nextDepth, gameState.generateSuccessor(agentIndex, action)) for action in legalActions)
+            score = min(self.minimax(nextAgent, nextDepth, gameState.generateSuccessor(agentIndex, action)) for action in legalActions)
+
+        self.transpositionTable[stateKey] = score
+        return score
 
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
