@@ -117,7 +117,92 @@ def scoreEvaluationFunction(currentGameState):
         Your improved evaluation function here
     """
 
-    return currentGameState.getScore()
+    def distanceToNearestPellet(gameState):
+        pacmanPos = gameState.getPacmanPosition()
+        food = gameState.getFood()
+        minDistance = float('inf')
+
+        for x in range(food.width):
+            for y in range(food.height):
+                if food[x][y]:
+                    distance = manhattanDistance(pacmanPos, (x, y))
+
+                    if distance < minDistance:
+                        minDistance = distance
+
+        return minDistance
+
+
+    def distanceToNearestGhost(gameState):
+        pacmanPos = gameState.getPacmanPosition()
+        ghostPositions = gameState.getGhostPositions()
+        minDistance = float('inf')
+
+        for ghostPos in ghostPositions:
+            distance = manhattanDistance(pacmanPos, ghostPos)
+
+            if distance < minDistance:
+                minDistance = distance
+
+        return minDistance
+    
+    def pelletNumberPerRegionParameter(gameState, regionSize=5):
+      pacmanPos = gameState.getPacmanPosition()
+      food = gameState.getFood()
+      walls = gameState.getWalls()
+      regionPelletCount = 0
+
+      for dx in range(-regionSize, regionSize + 1):
+        for dy in range(-regionSize, regionSize + 1):
+          x, y = pacmanPos[0] + dx, pacmanPos[1] + dy
+
+          if 0 <= x < walls.width and 0 <= y < walls.height and food[x][y]:
+            regionPelletCount += 1
+
+      return regionPelletCount
+    
+
+    def mazeComplexityParameter(gameState, radius=4):
+        pacmanPos = gameState.getPacmanPosition()
+        walls = gameState.getWalls()
+        complexity = 0
+
+        for dx in range(-radius, radius + 1):
+            for dy in range(-radius, radius + 1):
+                if dx == 0 and dy == 0:
+                    continue
+                
+                x, y = pacmanPos[0] + dx, pacmanPos[1] + dy
+                
+                if 0 <= x < walls.width and 0 <= y < walls.height and walls[x][y]:
+                    complexity += 1
+
+        return complexity
+
+
+    def ghostVulnerabilityParameter(gameState):
+        pacmanPos = gameState.getPacmanPosition()
+        scaredGhosts = [ghostState for ghostState in gameState.getGhostStates() if ghostState.scaredTimer > 0]
+        minScaredGhostDistance = float('inf')
+
+        for ghostState in scaredGhosts:
+            ghostPos = ghostState.getPosition()
+            distance = manhattanDistance(pacmanPos, ghostPos)
+
+            if distance < minScaredGhostDistance:
+                minScaredGhostDistance = distance
+        
+        return 1 / (minScaredGhostDistance + 1) if minScaredGhostDistance != float('inf') else 0
+    
+
+    score = currentGameState.getScore()
+    score += distanceToNearestPellet(currentGameState)
+    score -= 2 * distanceToNearestGhost(currentGameState)
+    score += pelletNumberPerRegionParameter(currentGameState)
+    score += ghostVulnerabilityParameter(currentGameState)
+    score -= mazeComplexityParameter(currentGameState)
+
+    return score
 
 
 class MultiAgentSearchAgent(Agent):
@@ -154,7 +239,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
     def minimax(self, agentIndex, depth, gameState):
         if depth == 0 or gameState.isWin() or gameState.isLose():
-            return basicEvaluationFunction(gameState)
+            return self.evaluationFunction(gameState)
 
         numAgents = gameState.getNumAgents()
         nextAgent = (agentIndex + 1) % numAgents
@@ -200,7 +285,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         nextDepth = depth - 1 if nextAgent == 0 else depth
 
         legalActions = gameState.getLegalActions(agentIndex)
-        
+
         if agentIndex == 0:
             value = float('-inf')
 
@@ -247,85 +332,3 @@ class AStarAlphaBetaAgent(MultiAgentSearchAgent):
           Your code here
         """
         pass
-    
-
-def basicEvaluationFunction(currentGameState):
-    
-    def distanceToNearestPellet(gameState):
-        pacmanPos = gameState.getPacmanPosition()
-        food = gameState.getFood()
-        minDistance = float('inf')
-
-        for x in range(food.width):
-            for y in range(food.height):
-                if food[x][y]:
-                    distance = manhattanDistance(pacmanPos, (x, y))
-
-                    if distance < minDistance:
-                        minDistance = distance
-
-        return minDistance
-
-
-    def distanceToNearestGhost(gameState):
-        pacmanPos = gameState.getPacmanPosition()
-        ghostPositions = gameState.getGhostPositions()
-        minDistance = float('inf')
-
-        for ghostPos in ghostPositions:
-            distance = manhattanDistance(pacmanPos, ghostPos)
-
-            if distance < minDistance:
-                minDistance = distance
-
-        return minDistance
-
-    return distanceToNearestPellet(currentGameState) - distanceToNearestGhost(currentGameState)
-
-
-def betterEvaluationFunction(currentGameState):
-    """
-      Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
-      evaluation function (question 5).
-
-      DESCRIPTION: <write something here so we know what you did>
-    """
-    "*** YOUR CODE HERE ***"
-    pacmanPos = currentGameState.getPacmanPosition()
-    ghostList = currentGameState.getGhostStates() 
-    foods = currentGameState.getFood()
-    capsules = currentGameState.getCapsules()
-    # Return based on game state
-    if currentGameState.isWin():
-        return float("inf")
-    if currentGameState.isLose():
-        return float("-inf")
-    # Populate foodDistList and find minFoodDist
-    foodDistList = []
-    for each in foods.asList():
-        foodDistList = foodDistList + [util.manhattanDistance(each, pacmanPos)]
-    minFoodDist = min(foodDistList)
-    # Populate ghostDistList and scaredGhostDistList, find minGhostDist and minScaredGhostDist
-    ghostDistList = []
-    scaredGhostDistList = []
-    for each in ghostList:
-        if each.scaredTimer == 0:
-            ghostDistList = ghostDistList + [util.manhattanDistance(pacmanPos, each.getPosition())]
-        elif each.scaredTimer > 0:
-            scaredGhostDistList = scaredGhostDistList + [util.manhattanDistance(pacmanPos, each.getPosition())]
-    minGhostDist = -1
-    if len(ghostDistList) > 0:
-        minGhostDist = min(ghostDistList)
-    minScaredGhostDist = -1
-    if len(scaredGhostDistList) > 0:
-        minScaredGhostDist = min(scaredGhostDistList)
-    # Evaluate score
-    score = scoreEvaluationFunction(currentGameState)
-    """
-        Your improved evaluation here
-    """
-    return score
-
-
-# Abbreviation
-better = betterEvaluationFunction
