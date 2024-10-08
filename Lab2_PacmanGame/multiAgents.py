@@ -4,7 +4,7 @@
 # educational purposes provided that (1) you do not distribute or publish
 # solutions, (2) you retain this notice, and (3) you provide clear
 # attribution to UC Berkeley, including a link to http://ai.berkeley.edu.
-# 
+#
 # Attribution Information: The Pacman AI projects were developed at UC Berkeley.
 # The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
@@ -13,8 +13,9 @@
 
 
 from util import manhattanDistance
-from game import Directions
-import random, util, sys
+import random
+import util
+from util import PriorityQueue
 
 from game import Agent
 
@@ -42,10 +43,13 @@ class ReflexAgent(Agent):
         legalMoves = gameState.getLegalActions()
 
         # Choose one of the best actions
-        scores = [self.evaluationFunction(gameState, action) for action in legalMoves]
+        scores = [self.evaluationFunction(
+            gameState, action) for action in legalMoves]
         bestScore = max(scores)
-        bestIndices = [index for index in range(len(scores)) if scores[index] == bestScore]
-        chosenIndex = random.choice(bestIndices) # Pick randomly among the best
+        bestIndices = [index for index in range(
+            len(scores)) if scores[index] == bestScore]
+        # Pick randomly among the best
+        chosenIndex = random.choice(bestIndices)
 
         "Add more of your code here if you want to"
 
@@ -71,35 +75,36 @@ class ReflexAgent(Agent):
         newPos = successorGameState.getPacmanPosition()      # Pacman position after moving
         newFood = successorGameState.getFood()               # Remaining food
         newGhostStates = successorGameState.getGhostStates()
-        newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
+        newScaredTimes = [
+            ghostState.scaredTimer for ghostState in newGhostStates]
 
         "*** YOUR CODE HERE ***"
         listFood = newFood.asList()                        # All remaining food as list
         ghostPos = successorGameState.getGhostPositions()  # Get the ghost position
-        # Initialize with list 
+        # Initialize with list
         mFoodDist = []
         mGhostDist = []
 
-        # Find the distance of all the foods to the pacman 
+        # Find the distance of all the foods to the pacman
         for food in listFood:
-          mFoodDist.append(manhattanDistance(food, newPos))
+            mFoodDist.append(manhattanDistance(food, newPos))
 
         # Find the distance of all the ghost to the pacman
         for ghost in ghostPos:
-          mGhostDist.append(manhattanDistance(ghost, newPos))
+            mGhostDist.append(manhattanDistance(ghost, newPos))
 
         if currentGameState.getPacmanPosition() == newPos:
-          return (-(float("inf")))
-
-        for ghostDistance in mGhostDist:
-          if ghostDistance < 2:
             return (-(float("inf")))
 
+        for ghostDistance in mGhostDist:
+            if ghostDistance < 2:
+                return (-(float("inf")))
+
         if len(mFoodDist) == 0:
-          return float("inf")
+            return float("inf")
         else:
-          minFoodDist = min(mFoodDist)
-          maxFoodDist = max(mFoodDist)
+            minFoodDist = min(mFoodDist)
+            maxFoodDist = max(mFoodDist)
 
         return 1000/sum(mFoodDist) + 10000/len(mFoodDist)
 
@@ -132,7 +137,6 @@ def scoreEvaluationFunction(currentGameState):
 
         return minDistance
 
-
     def distanceToNearestGhost(gameState):
         pacmanPos = gameState.getPacmanPosition()
         ghostPositions = gameState.getGhostPositions()
@@ -145,23 +149,21 @@ def scoreEvaluationFunction(currentGameState):
                 minDistance = distance
 
         return minDistance
-    
 
     def pelletNumberPerRegionParameter(gameState, regionSize=5):
-      pacmanPos = gameState.getPacmanPosition()
-      food = gameState.getFood()
-      walls = gameState.getWalls()
-      regionPelletCount = 0
+        pacmanPos = gameState.getPacmanPosition()
+        food = gameState.getFood()
+        walls = gameState.getWalls()
+        regionPelletCount = 0
 
-      for dx in range(-regionSize, regionSize + 1):
-        for dy in range(-regionSize, regionSize + 1):
-          x, y = pacmanPos[0] + dx, pacmanPos[1] + dy
+        for dx in range(-regionSize, regionSize + 1):
+            for dy in range(-regionSize, regionSize + 1):
+                x, y = pacmanPos[0] + dx, pacmanPos[1] + dy
 
-          if 0 <= x < walls.width and 0 <= y < walls.height and food[x][y]:
-            regionPelletCount += 1
+                if 0 <= x < walls.width and 0 <= y < walls.height and food[x][y]:
+                    regionPelletCount += 1
 
-      return regionPelletCount
-    
+        return regionPelletCount
 
     def mazeComplexityParameter(gameState, radius=4):
         pacmanPos = gameState.getPacmanPosition()
@@ -172,18 +174,18 @@ def scoreEvaluationFunction(currentGameState):
             for dy in range(-radius, radius + 1):
                 if dx == 0 and dy == 0:
                     continue
-                
+
                 x, y = pacmanPos[0] + dx, pacmanPos[1] + dy
-                
+
                 if 0 <= x < walls.width and 0 <= y < walls.height and walls[x][y]:
                     complexity += 1
 
         return complexity
 
-
     def ghostVulnerabilityParameter(gameState):
         pacmanPos = gameState.getPacmanPosition()
-        scaredGhosts = [ghostState for ghostState in gameState.getGhostStates() if ghostState.scaredTimer > 0]
+        scaredGhosts = [ghostState for ghostState in gameState.getGhostStates(
+        ) if ghostState.scaredTimer > 0]
         minScaredGhostDistance = float('inf')
 
         for ghostState in scaredGhosts:
@@ -192,9 +194,8 @@ def scoreEvaluationFunction(currentGameState):
 
             if distance < minScaredGhostDistance:
                 minScaredGhostDistance = distance
-        
+
         return 1 / (minScaredGhostDistance + 1) if minScaredGhostDistance != float('inf') else 0
-    
 
     score = currentGameState.getScore()
     score += distanceToNearestPellet(currentGameState)
@@ -222,7 +223,7 @@ class MultiAgentSearchAgent(Agent):
     """
 
     def __init__(self, evalFn='scoreEvaluationFunction', depth='2'):
-        self.index = 0 # Pacman is always agent index 0
+        self.index = 0  # Pacman is always agent index 0
         self.evaluationFunction = util.lookup(evalFn, globals())
         self.depth = int(depth)
 
@@ -236,23 +237,22 @@ class MinimaxAgent(MultiAgentSearchAgent):
         super().__init__(evalFn, depth)
         self.transpositionTable = {}
 
-
     def getAction(self, gameState):
         bestAction = None
         bestScore = float('-inf')
-        
+
         for currentDepth in range(1, self.depth + 1):
             self.transpositionTable.clear()
-            
+
             for action in gameState.getLegalActions(0):
-                score = self.minimax(1, currentDepth, gameState.generateSuccessor(0, action))
-                
+                score = self.minimax(
+                    1, currentDepth, gameState.generateSuccessor(0, action))
+
                 if score > bestScore:
                     bestScore = score
                     bestAction = action
-        
+
         return bestAction
-    
 
     def minimax(self, agentIndex, depth, gameState):
         stateKey = (agentIndex, depth, gameState)
@@ -272,11 +272,14 @@ class MinimaxAgent(MultiAgentSearchAgent):
         legalActions = gameState.getLegalActions(agentIndex)
 
         if agentIndex == 0:
-            score = max(self.minimax(nextAgent, nextDepth, gameState.generateSuccessor(agentIndex, action)) for action in legalActions)
+            score = max(self.minimax(nextAgent, nextDepth, gameState.generateSuccessor(
+                agentIndex, action)) for action in legalActions)
         else:
-            score = min(self.minimax(nextAgent, nextDepth, gameState.generateSuccessor(agentIndex, action)) for action in legalActions)
+            score = min(self.minimax(nextAgent, nextDepth, gameState.generateSuccessor(
+                agentIndex, action)) for action in legalActions)
 
         self.transpositionTable[stateKey] = score
+
         return score
 
 
@@ -284,7 +287,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
     """
       Here is the place to define your Alpha-Beta Pruning Algorithm
     """
-    
+
     def getAction(self, gameState):
         legalActions = gameState.getLegalActions(0)
         bestAction = None
@@ -293,15 +296,16 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         bestValue = float('-inf')
 
         for action in legalActions:
-            value = self.alphaBeta(1, self.depth, gameState.generateSuccessor(0, action), alpha, beta)
+            value = self.alphaBeta(
+                1, self.depth, gameState.generateSuccessor(0, action), alpha, beta)
 
             if value > bestValue:
                 bestValue = value
                 bestAction = action
+
             alpha = max(alpha, bestValue)
 
         return bestAction
-    
 
     def alphaBeta(self, agentIndex, depth, gameState, alpha, beta):
         if depth == 0 or gameState.isWin() or gameState.isLose():
@@ -317,23 +321,25 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
             value = float('-inf')
 
             for action in legalActions:
-                value = max(value, self.alphaBeta(nextAgent, nextDepth, gameState.generateSuccessor(agentIndex, action), alpha, beta))
+                value = max(value, self.alphaBeta(
+                    nextAgent, nextDepth, gameState.generateSuccessor(agentIndex, action), alpha, beta))
                 alpha = max(alpha, value)
 
                 if alpha >= beta:
                     break
-                
+
             return value
         else:
             value = float('inf')
 
             for action in legalActions:
-                value = min(value, self.alphaBeta(nextAgent, nextDepth, gameState.generateSuccessor(agentIndex, action), alpha, beta))
+                value = min(value, self.alphaBeta(
+                    nextAgent, nextDepth, gameState.generateSuccessor(agentIndex, action), alpha, beta))
                 beta = min(beta, value)
 
                 if alpha >= beta:
                     break
-                
+
             return value
 
 
@@ -343,19 +349,154 @@ class AStarMinimaxAgent(MultiAgentSearchAgent):
     """
 
     def getAction(self, gameState):
-        """
-          Your code here
-        """
-        pass
+        bestAction = None
+        bestScore = float('-inf')
+
+        for action in gameState.getLegalActions(0):
+            score = self.aStarMinimax(
+                1, self.depth, gameState.generateSuccessor(0, action))
+
+            if score > bestScore:
+                bestScore = score
+                bestAction = action
+
+        return bestAction
+
+    def aStarMinimax(self, agentIndex, depth, gameState):
+        pq = PriorityQueue()
+        pq.push((agentIndex, depth, gameState, 0), 0)
+
+        while not pq.isEmpty():
+            agentIndex, depth, gameState, cost = pq.pop()
+
+            if depth == 0 or gameState.isWin() or gameState.isLose():
+                return self.evaluationFunction(gameState) - heuristic(gameState)
+
+            numAgents = gameState.getNumAgents()
+            nextAgent = (agentIndex + 1) % numAgents
+            nextDepth = depth - 1 if nextAgent == 0 else depth
+
+            legalActions = gameState.getLegalActions(agentIndex)
+
+            if agentIndex == 0:
+                score = float('-inf')
+                for action in legalActions:
+                    successor = gameState.generateSuccessor(agentIndex, action)
+                    newCost = cost + \
+                        self.evaluationFunction(
+                            successor) - heuristic(successor)
+
+                    pq.push((nextAgent, nextDepth, successor, newCost), newCost)
+                    score = max(score, newCost)
+            else:
+                score = float('inf')
+                for action in legalActions:
+                    successor = gameState.generateSuccessor(agentIndex, action)
+                    newCost = cost + \
+                        self.evaluationFunction(
+                            successor) - heuristic(successor)
+
+                    pq.push((nextAgent, nextDepth, successor, newCost), newCost)
+                    score = min(score, newCost)
+
+        return score
 
 
 class AStarAlphaBetaAgent(MultiAgentSearchAgent):
     """
-      Your Alpha-Beta pruning algorithm with A* path searching improvement agent
+      Your Alpha-Beta algorithm with A* path searching improvement agent
     """
 
     def getAction(self, gameState):
-        """
-          Your code here
-        """
-        pass
+        bestAction = None
+        bestScore = float('-inf')
+        alpha = float('-inf')
+        beta = float('inf')
+
+        pq = PriorityQueue()
+        for action in gameState.getLegalActions(0):
+            pq.push((action, 1, self.depth, gameState.generateSuccessor(
+                0, action), alpha, beta), 0)
+
+        while not pq.isEmpty():
+            action, agentIndex, depth, state, alpha, beta = pq.pop()
+            score = self.aStarAlphaBeta(agentIndex, depth, state, alpha, beta)
+
+            if score > bestScore:
+                bestScore = score
+                bestAction = action
+
+        return bestAction
+
+    def aStarAlphaBeta(self, agentIndex, depth, gameState, alpha, beta):
+        if depth == 0 or gameState.isWin() or gameState.isLose():
+            return self.evaluationFunction(gameState) - heuristic(gameState)
+
+        numAgents = gameState.getNumAgents()
+        nextAgent = (agentIndex + 1) % numAgents
+        nextDepth = depth - 1 if nextAgent == 0 else depth
+
+        legalActions = gameState.getLegalActions(agentIndex)
+
+        if agentIndex == 0:  # Pacman's turn to maximize
+            value = float('-inf')
+            pq = PriorityQueue()
+
+            for action in legalActions:
+                successor = gameState.generateSuccessor(agentIndex, action)
+
+                newCost = self.evaluationFunction(
+                    successor) - heuristic(successor)
+                pq.push((action, nextAgent, nextDepth,
+                        successor, alpha, beta), newCost)
+
+            while not pq.isEmpty():
+                _, nextAgent, nextDepth, successor, alpha, beta = pq.pop()
+                value = max(value, self.aStarAlphaBeta(
+                    nextAgent, nextDepth, successor, alpha, beta))
+
+                alpha = max(alpha, value)
+
+                if alpha >= beta:
+                    break
+
+            return value
+        else:
+            value = float('inf')
+            pq = PriorityQueue()
+
+            for action in legalActions:
+                successor = gameState.generateSuccessor(agentIndex, action)
+
+                newCost = self.evaluationFunction(
+                    successor) - heuristic(successor)
+                pq.push((action, nextAgent, nextDepth,
+                        successor, alpha, beta), newCost)
+
+            while not pq.isEmpty():
+                _, nextAgent, nextDepth, successor, alpha, beta = pq.pop()
+                value = min(value, self.aStarAlphaBeta(
+                    nextAgent, nextDepth, successor, alpha, beta))
+
+                beta = min(beta, value)
+
+                if alpha >= beta:
+                    break
+
+            return value
+
+
+def heuristic(gameState):
+    pacmanPos = gameState.getPacmanPosition()
+    food = gameState.getFood()
+    minPelletDistance = float('inf')
+
+    for x in range(food.width):
+        for y in range(food.height):
+            if food[x][y]:
+                distance = manhattanDistance(pacmanPos, (x, y))
+
+                if distance < minPelletDistance:
+                    minPelletDistance = distance
+
+    return minPelletDistance
