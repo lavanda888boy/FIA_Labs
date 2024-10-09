@@ -198,11 +198,11 @@ def scoreEvaluationFunction(currentGameState):
         return 1 / (minScaredGhostDistance + 1) if minScaredGhostDistance != float('inf') else 0
 
     score = currentGameState.getScore()
-    score += distanceToNearestPellet(currentGameState)
-    score -= 2 * distanceToNearestGhost(currentGameState)
-    score += pelletNumberPerRegionParameter(currentGameState)
+    score -= distanceToNearestPellet(currentGameState)
+    score += distanceToNearestGhost(currentGameState)
+    score += 0.5 * pelletNumberPerRegionParameter(currentGameState)
     score += ghostVulnerabilityParameter(currentGameState)
-    score -= mazeComplexityParameter(currentGameState)
+    score -= 0.25 * mazeComplexityParameter(currentGameState)
 
     return score
 
