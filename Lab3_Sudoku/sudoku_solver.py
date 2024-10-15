@@ -77,15 +77,56 @@ class SudokuSolver:
 
         return None
 
+    def find_empty_cell_mrv(self):
+        min_domain_size = float('inf')
+        best_cell = None
+
+        for cell in self.domains:
+            if self.board[cell[0]][cell[1]] == 0:
+                domain_size = len(self.domains[cell])
+
+                if domain_size < min_domain_size:
+                    min_domain_size = domain_size
+                    best_cell = cell
+
+        return best_cell
+
+    def order_domain_lcv(self, var):
+        def count_constraints(value):
+            count = 0
+            row, col = var
+
+            for i in range(9):
+                if (row, i) in self.domains and value in self.domains[(row, i)]:
+                    count += 1
+
+            for i in range(9):
+                if (i, col) in self.domains and value in self.domains[(i, col)]:
+                    count += 1
+
+            box_x = col // 3
+            box_y = row // 3
+
+            for i in range(box_y * 3, box_y * 3 + 3):
+                for j in range(box_x * 3, box_x * 3 + 3):
+                    if (i, j) in self.domains and value in self.domains[(i, j)]:
+                        count += 1
+
+            return count
+
+        return sorted(self.domains[var], key=count_constraints)
+
     def solve(self):
-        empty_cell = self.find_empty_cell()
+        # empty_cell = self.find_empty_cell()
+        empty_cell = self.find_empty_cell_mrv()
 
         if not empty_cell:
             return True
 
         row, col = empty_cell
 
-        for num in list(self.domains[(row, col)]):
+        # for num in list(self.domains[(row, col)]):
+        for num in self.order_domain_lcv((row, col)):
             if self.is_valid(num, (row, col)):
                 self.board[row][col] = num
                 self.propagate_constraints()
