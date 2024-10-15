@@ -9,6 +9,27 @@ class SudokuSolver:
                        '*' else 0 for char in line.strip()]
                 self.board.append(row)
 
+        self.domains = self.initialize_domains()
+
+    def initialize_domains(self):
+        domains = {}
+
+        for i in range(9):
+            for j in range(9):
+                if self.board[i][j] == 0:
+                    domains[(i, j)] = set(range(1, 10))
+                else:
+                    domains[(i, j)] = {self.board[i][j]}
+
+        return domains
+
+    def propagate_constraints(self):
+        for domain_key in self.domains.keys():
+            if self.board[domain_key[0]][domain_key[1]] == 0:
+                for num in range(1, 10):
+                    if not self.is_valid(num, domain_key):
+                        self.domains[domain_key].discard(num)
+
     def print_board(self):
         for row in self.board:
             print(" ".join(str(num) for num in row))
