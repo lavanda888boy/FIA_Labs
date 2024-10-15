@@ -30,6 +30,21 @@ class SudokuSolver:
                     if not self.is_valid(num, domain_key):
                         self.domains[domain_key].discard(num)
 
+    def forward_checking(self, row, col, num):
+        for i in range(9):
+            if (row, i) in self.domains:
+                self.domains[(row, i)].discard(num)
+            if (i, col) in self.domains:
+                self.domains[(i, col)].discard(num)
+
+        box_x = col // 3
+        box_y = row // 3
+
+        for i in range(box_y*3, box_y*3 + 3):
+            for j in range(box_x*3, box_x*3 + 3):
+                if (i, j) in self.domains:
+                    self.domains[(i, j)].discard(num)
+
     def print_board(self):
         for row in self.board:
             print(" ".join(str(num) for num in row))
@@ -67,16 +82,20 @@ class SudokuSolver:
 
         if not empty_cell:
             return True
-        else:
-            row, col = empty_cell
 
-        for i in range(1, 10):
-            if self.is_valid(i, (row, col)):
-                self.board[row][col] = i
+        row, col = empty_cell
+
+        for num in list(self.domains[(row, col)]):
+            if self.is_valid(num, (row, col)):
+                self.board[row][col] = num
+                self.propagate_constraints()
+                self.forward_checking(row, col, num)
 
                 if self.solve():
                     return True
 
                 self.board[row][col] = 0
+                self.domains = self.initialize_domains()
+                self.propagate_constraints()
 
         return False
