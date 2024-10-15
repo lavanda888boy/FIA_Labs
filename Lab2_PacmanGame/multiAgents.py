@@ -438,7 +438,7 @@ class AStarAlphaBetaAgent(MultiAgentSearchAgent):
 
         legalActions = gameState.getLegalActions(agentIndex)
 
-        if agentIndex == 0:  # Pacman's turn to maximize
+        if agentIndex == 0:
             value = float('-inf')
             pq = PriorityQueue()
 
@@ -488,15 +488,13 @@ class AStarAlphaBetaAgent(MultiAgentSearchAgent):
 
 def heuristic(gameState):
     pacmanPos = gameState.getPacmanPosition()
-    food = gameState.getFood()
-    minPelletDistance = float('inf')
+    capsules = gameState.getCapsules()
+    minCapsuleDistance = float('inf')
 
-    for x in range(food.width):
-        for y in range(food.height):
-            if food[x][y]:
-                distance = manhattanDistance(pacmanPos, (x, y))
+    for capsule in capsules:
+        distance = manhattanDistance(pacmanPos, (capsule[0], capsule[0]))
 
-                if distance < minPelletDistance:
-                    minPelletDistance = distance
+        if distance < minCapsuleDistance:
+            minCapsuleDistance = distance
 
-    return minPelletDistance
+    return minCapsuleDistance
