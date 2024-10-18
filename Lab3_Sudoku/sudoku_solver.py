@@ -91,7 +91,7 @@ class SudokuSolver:
 
         return best_cell
 
-    def order_domain_lcv(self, var):
+    def order_domains_lcv(self, var):
         def count_constraints(value):
             count = 0
             row, col = var
@@ -126,7 +126,7 @@ class SudokuSolver:
         row, col = empty_cell
 
         # for num in list(self.domains[(row, col)]):
-        for num in self.order_domain_lcv((row, col)):
+        for num in self.order_domains_lcv((row, col)):
             if self.is_valid(num, (row, col)):
                 self.board[row][col] = num
                 self.propagate_constraints()

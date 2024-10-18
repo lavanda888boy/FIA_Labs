@@ -1,6 +1,6 @@
 from sudoku_solver import SudokuSolver
 
-ss = SudokuSolver('./sudoku.txt')
+ss = SudokuSolver('./grid5.txt')
 
 if __name__ == "__main__":
     ss.print_board()
