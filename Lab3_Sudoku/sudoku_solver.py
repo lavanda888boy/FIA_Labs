@@ -2,15 +2,25 @@ class SudokuSolver:
 
     zero_delimiter = '*'
 
-    def __init__(self, file_path):
-        self.board = []
+    def __init__(self, board, file_path):
+        if (file_path is not None) and (board is None):
+            self.board = []
 
-        with open(file_path, 'r') as file:
-            for line in file:
-                row = [int(char) if char !=
-                       self.zero_delimiter else 0 for char in line.strip()]
-                self.board.append(row)
+            with open(file_path, 'r') as file:
+                for line in file:
+                    row = [int(char) if char !=
+                           self.zero_delimiter else 0 for char in line.strip()]
+                    self.board.append(row)
 
+            self.setup()
+        elif (board is not None) and (file_path is None):
+            self.board = board
+            self.setup()
+        else:
+            raise ValueError(
+                "Either board or file_path should not be present None.")
+
+    def setup(self):
         self.domains = self.initialize_domains()
         self.neighbors = self.initialize_neighbors()
 

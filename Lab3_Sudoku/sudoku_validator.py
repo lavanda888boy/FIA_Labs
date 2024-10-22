@@ -32,7 +32,7 @@ class SudokuValidator:
 
     def check_empty_board(self):
         if not all(cell == 0 for row in self.board for cell in row):
-            return True, "The board is valid."
+            return True, ""
 
         return False, "The board is empty."
 
@@ -42,7 +42,7 @@ class SudokuValidator:
         if given_count == 1:
             return False, "Only one given value."
 
-        return True, "The board is valid."
+        return True, ""
 
     def check_insufficient_givens(self):
         given_count = sum(cell != 0 for row in self.board for cell in row)
@@ -50,7 +50,7 @@ class SudokuValidator:
         if given_count < 17:
             return False, "Insufficient givens (less than 17)."
 
-        return True, "The board is valid."
+        return True, ""
 
     def check_duplicates(self):
         for i in range(9):
@@ -78,7 +78,7 @@ class SudokuValidator:
                 if len(box_values) != len(set(box_values)):
                     return False, f"Duplicate values found in 3x3 box starting at ({box_row + 1}, {box_col + 1})."
 
-        return True, "The board is valid."
+        return True, ""
 
     def check_unsolvable_square(self):
         for i in range(9):
@@ -86,7 +86,7 @@ class SudokuValidator:
                 if self.board[i][j] == 0 and len(self.domains[(i, j)]) == 0:
                     return False, f"Unsolvable square at ({i + 1}, {j + 1})."
 
-        return True, "The board is valid."
+        return True, ""
 
     def check_unsolvable_box_column_row(self):
         for num in range(1, 10):
@@ -115,7 +115,7 @@ class SudokuValidator:
                         ):
                             return False, f"Number {num} cannot be placed in 3x3 box starting at ({box_row + 1}, {box_col + 1})."
 
-        return True, "The board is valid."
+        return True, ""
 
     def check_multiple_solutions(self):
         solution_count = self.sudoku_solver.solve_advanced(
