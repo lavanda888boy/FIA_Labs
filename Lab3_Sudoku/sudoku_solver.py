@@ -12,6 +12,12 @@ class SudokuSolver:
                 self.board.append(row)
 
         self.domains = self.initialize_domains()
+        self.neighbors = self.initialize_neighbors()
+
+    def print_board(self):
+        for row in self.board:
+            print(" ".join(str(num) for num in row))
+        print()
 
     def initialize_domains(self):
         domains = {}
@@ -25,12 +31,64 @@ class SudokuSolver:
 
         return domains
 
+    def initialize_neighbors(self):
+        neighbors = {}
+
+        for row in range(9):
+            for col in range(9):
+                neighbors[(row, col)] = self.get_neighbors((row, col))
+
+        return neighbors
+
+    def get_neighbors(self, var):
+        row, col = var
+        neighbors = set()
+
+        for i in range(9):
+            if (row, i) != var:
+                neighbors.add((row, i))
+            if (i, col) != var:
+                neighbors.add((i, col))
+
+        box_x = col // 3
+        box_y = row // 3
+        for i in range(box_y*3, box_y*3 + 3):
+            for j in range(box_x*3, box_x*3 + 3):
+                if (i, j) != var:
+                    neighbors.add((i, j))
+
+        return neighbors
+
     def propagate_constraints(self):
         for domain_key in self.domains.keys():
             if self.board[domain_key[0]][domain_key[1]] == 0:
                 for num in range(1, 10):
                     if not self.is_valid_number(num, domain_key):
                         self.domains[domain_key].discard(num)
+
+    def propagate_constraints_AC(self):
+        queue = [(var, neighbor)
+                 for var in self.domains for neighbor in self.get_neighbors(var)]
+        while queue:
+            (xi, xj) = queue.pop(0)
+
+            if self.revise(xi, xj):
+                if len(self.domains[xi]) == 0:
+                    return False
+
+                for xk in self.get_neighbors(xi):
+                    if xk != xj:
+                        queue.append((xk, xi))
+
+    def revise(self, xi, xj):
+        revised = False
+
+        for x in set(self.domains[xi]):
+            if not any(self.is_valid_number(x, (xi[0], xi[1])) for xi in self.neighbors[xj]):
+                self.domains[xi].remove(x)
+                revised = True
+
+        return revised
 
     def forward_checking(self, row, col, num):
         for i in range(9):
@@ -47,26 +105,19 @@ class SudokuSolver:
                 if (i, j) in self.domains:
                     self.domains[(i, j)].discard(num)
 
-    def print_board(self):
-        for row in self.board:
-            print(" ".join(str(num) for num in row))
-        print()
-
     def is_valid_number(self, num, pos):
-        for i in range(len(self.board[0])):
-            if self.board[pos[0]][i] == num and pos[1] != i:
+        row, col = pos
+
+        for i in range(9):
+            if self.board[row][i] == num or self.board[i][col] == num:
                 return False
 
-        for i in range(len(self.board)):
-            if self.board[i][pos[1]] == num and pos[0] != i:
-                return False
+        box_x = col // 3
+        box_y = row // 3
 
-        box_x = pos[1] // 3
-        box_y = pos[0] // 3
-
-        for i in range(box_y*3, box_y*3 + 3):
-            for j in range(box_x*3, box_x*3 + 3):
-                if self.board[i][j] == num and (i, j) != pos:
+        for i in range(box_y * 3, box_y * 3 + 3):
+            for j in range(box_x * 3, box_x * 3 + 3):
+                if self.board[i][j] == num:
                     return False
 
         return True
@@ -149,7 +200,8 @@ class SudokuSolver:
         for num in self.order_domains_lcv((row, col)):
             if self.is_valid_number(num, (row, col)):
                 self.board[row][col] = num
-                self.propagate_constraints()
+                # self.propagate_constraints()
+                self.propagate_constraints_AC()
                 self.forward_checking(row, col, num)
 
                 if count_solutions:
@@ -162,6 +214,7 @@ class SudokuSolver:
 
                 self.board[row][col] = 0
                 self.domains = self.initialize_domains()
-                self.propagate_constraints()
+                # self.propagate_constraints()
+                self.propagate_constraints_AC()
 
         return solution_count if count_solutions else False
