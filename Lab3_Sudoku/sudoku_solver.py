@@ -1,12 +1,14 @@
 class SudokuSolver:
 
+    zero_delimiter = '*'
+
     def __init__(self, file_path):
         self.board = []
 
         with open(file_path, 'r') as file:
             for line in file:
                 row = [int(char) if char !=
-                       '*' else 0 for char in line.strip()]
+                       self.zero_delimiter else 0 for char in line.strip()]
                 self.board.append(row)
 
         self.domains = self.initialize_domains()
@@ -27,7 +29,7 @@ class SudokuSolver:
         for domain_key in self.domains.keys():
             if self.board[domain_key[0]][domain_key[1]] == 0:
                 for num in range(1, 10):
-                    if not self.is_valid(num, domain_key):
+                    if not self.is_valid_number(num, domain_key):
                         self.domains[domain_key].discard(num)
 
     def forward_checking(self, row, col, num):
@@ -50,7 +52,7 @@ class SudokuSolver:
             print(" ".join(str(num) for num in row))
         print()
 
-    def is_valid(self, num, pos):
+    def is_valid_number(self, num, pos):
         for i in range(len(self.board[0])):
             if self.board[pos[0]][i] == num and pos[1] != i:
                 return False
@@ -116,27 +118,50 @@ class SudokuSolver:
 
         return sorted(self.domains[var], key=count_constraints)
 
-    def solve(self):
-        # empty_cell = self.find_empty_cell()
-        empty_cell = self.find_empty_cell_mrv()
+    def solve_backtrack(self):
+        empty_cell = self.find_empty_cell()
 
         if not empty_cell:
             return True
+        else:
+            row, col = empty_cell
+
+        for i in range(1, 10):
+            if self.is_valid_number(i, (row, col)):
+                self.board[row][col] = i
+
+                if self.solve_backtrack():
+                    return True
+
+                self.board[row][col] = 0
+
+        return False
+
+    def solve_advanced(self, count_solutions=False):
+        empty_cell = self.find_empty_cell_mrv()
+
+        if not empty_cell:
+            return 1 if count_solutions else True
 
         row, col = empty_cell
+        solution_count = 0
 
-        # for num in list(self.domains[(row, col)]):
         for num in self.order_domains_lcv((row, col)):
-            if self.is_valid(num, (row, col)):
+            if self.is_valid_number(num, (row, col)):
                 self.board[row][col] = num
                 self.propagate_constraints()
                 self.forward_checking(row, col, num)
 
-                if self.solve():
-                    return True
+                if count_solutions:
+                    solution_count += self.solve_advanced(count_solutions)
+                    if solution_count > 1:
+                        return solution_count
+                else:
+                    if self.solve_advanced():
+                        return True
 
                 self.board[row][col] = 0
                 self.domains = self.initialize_domains()
                 self.propagate_constraints()
 
-        return False
+        return solution_count if count_solutions else False
