@@ -1,25 +1,19 @@
-from sudoku_solver import SudokuSolver
-from sudoku_validator import SudokuValidator
-from sudoku_generator import SudokuGenerator
+from sudoku_solver import load_sudoku, print_board, solve_backtrack, solve_advanced, initialize_domains, initialize_neighbors
+from sudoku_validator import verify_board
+from sudoku_generator import generate_sudoku
 
 if __name__ == "__main__":
-    sg = SudokuGenerator()
+    # board = load_sudoku("sudoku.txt")
+    board = generate_sudoku()
+    print_board(board)
 
-    sg.solver.board = sg.generate_sudoku()
+    domains = initialize_domains(board)
+    neighbors = initialize_neighbors()
 
-    sg.solver.print_board()
-    # sg.solver.solve_advanced()
-    # sg.solver.print_board()
+    # print(verify_board(board, domains, neighbors))
 
-    # ss.print_board()
+    domains = initialize_domains(board)
+    neighbors = initialize_neighbors()
 
-    # if sv.verify_board():
-    #     ss.solve_advanced()
-    #     ss.print_board()
-    # else:
-    #     print("\nInvalid board.")
-
-    # print(ss.domains)
-    # print()
-    # ss.propagate_constraints()
-    # print(ss.domains)
+    solve_advanced(board, domains, neighbors)
+    print_board(board)

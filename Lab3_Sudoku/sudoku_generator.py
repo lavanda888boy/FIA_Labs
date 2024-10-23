@@ -1,41 +1,37 @@
 import random
-from sudoku_solver import SudokuSolver
-from sudoku_validator import SudokuValidator
+from sudoku_solver import solve_backtrack, initialize_domains, initialize_neighbors
+from sudoku_validator import check_multiple_solutions
 
 
-class SudokuGenerator:
+def generate_full_board():
+    board = [[0] * 9 for _ in range(9)]
+    solve_backtrack(board)
+    return board
 
-    def __init__(self):
-        self.board = [[0] * 9 for _ in range(9)]
-        self.solver = SudokuSolver(self.board, None)
-        self.validator = SudokuValidator(self.solver)
 
-    def generate_full_board(self):
-        self.solver.solve_advanced()
-        self.board = self.solver.board
+def remove_numbers(board, num_holes):
+    count = 0
 
-    def remove_numbers(self, num_holes):
-        count = 0
+    while count < num_holes:
+        row = random.randint(0, 8)
+        col = random.randint(0, 8)
 
-        while count < num_holes:
-            row = random.randint(0, 8)
-            col = random.randint(0, 8)
+        if board[row][col] != 0:
+            board[row][col] = 0
+            count += 1
 
-            if self.board[row][col] != 0:
-                self.board[row][col] = 0
-                count += 1
 
-    def generate_sudoku(self, num_holes=40):
-        self.generate_full_board()
+def generate_sudoku(num_holes=40):
+    board = generate_full_board()
 
-        while True:
-            board_copy = [row.copy() for row in self.board]
-            self.remove_numbers(num_holes)
+    while True:
+        board_copy = [row.copy() for row in board]
+        remove_numbers(board, num_holes)
 
-            print(self.validator.check_multiple_solutions())
+        domains = initialize_domains(board)
+        neighbors = initialize_neighbors()
 
-            if self.validator.check_multiple_solutions():
-                return self.board
-            else:
-                self.board = board_copy
-                self.validator.sudoku_solver.board = self.board
+        if check_multiple_solutions(board, domains, neighbors):
+            return board
+        else:
+            board = board_copy

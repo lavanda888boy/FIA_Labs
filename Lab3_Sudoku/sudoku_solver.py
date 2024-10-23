@@ -1,230 +1,234 @@
-class SudokuSolver:
+ZERO_DELIMITER = '*'
 
-    zero_delimiter = '*'
 
-    def __init__(self, board, file_path):
-        if (file_path is not None) and (board is None):
-            self.board = []
+def load_sudoku(file_path):
+    board = []
 
-            with open(file_path, 'r') as file:
-                for line in file:
-                    row = [int(char) if char !=
-                           self.zero_delimiter else 0 for char in line.strip()]
-                    self.board.append(row)
+    with open(file_path, 'r') as file:
+        for line in file:
+            row = [int(char) if char !=
+                   ZERO_DELIMITER else 0 for char in line.strip()]
+            board.append(row)
 
-            self.setup()
-        elif (board is not None) and (file_path is None):
-            self.board = board
-            self.setup()
-        else:
-            raise ValueError(
-                "Either board or file_path should not be present None.")
+    return board
 
-    def setup(self):
-        self.domains = self.initialize_domains()
-        self.neighbors = self.initialize_neighbors()
 
-    def print_board(self):
-        for row in self.board:
-            print(" ".join(str(num) for num in row))
-        print()
+def print_board(board):
+    for row in board:
+        print(" ".join(str(num) for num in row))
+    print()
 
-    def initialize_domains(self):
-        domains = {}
 
-        for i in range(9):
-            for j in range(9):
-                if self.board[i][j] == 0:
-                    domains[(i, j)] = set(range(1, 10))
-                else:
-                    domains[(i, j)] = {self.board[i][j]}
+def initialize_domains(board):
+    domains = {}
 
-        return domains
+    for i in range(9):
+        for j in range(9):
+            if board[i][j] == 0:
+                domains[(i, j)] = set(range(1, 10))
+            else:
+                domains[(i, j)] = {board[i][j]}
 
-    def initialize_neighbors(self):
-        neighbors = {}
+    return domains
 
-        for row in range(9):
-            for col in range(9):
-                neighbors[(row, col)] = self.get_neighbors((row, col))
 
-        return neighbors
+def initialize_neighbors():
+    neighbors = {}
 
-    def get_neighbors(self, var):
-        row, col = var
-        neighbors = set()
+    for row in range(9):
+        for col in range(9):
+            neighbors[(row, col)] = get_neighbors((row, col))
 
-        for i in range(9):
-            if (row, i) != var:
-                neighbors.add((row, i))
-            if (i, col) != var:
-                neighbors.add((i, col))
+    return neighbors
 
-        box_x = col // 3
-        box_y = row // 3
-        for i in range(box_y*3, box_y*3 + 3):
-            for j in range(box_x*3, box_x*3 + 3):
-                if (i, j) != var:
-                    neighbors.add((i, j))
 
-        return neighbors
+def get_neighbors(var):
+    row, col = var
+    neighbors = set()
 
-    def propagate_constraints(self):
-        for domain_key in self.domains.keys():
-            if self.board[domain_key[0]][domain_key[1]] == 0:
-                for num in range(1, 10):
-                    if not self.is_valid_number(num, domain_key):
-                        self.domains[domain_key].discard(num)
+    for i in range(9):
+        if (row, i) != var:
+            neighbors.add((row, i))
+        if (i, col) != var:
+            neighbors.add((i, col))
 
-    def propagate_constraints_AC(self):
-        queue = [(var, neighbor)
-                 for var in self.domains for neighbor in self.get_neighbors(var)]
-        while queue:
-            (xi, xj) = queue.pop(0)
+    box_x = col // 3
+    box_y = row // 3
+    for i in range(box_y*3, box_y*3 + 3):
+        for j in range(box_x*3, box_x*3 + 3):
+            if (i, j) != var:
+                neighbors.add((i, j))
 
-            if self.revise(xi, xj):
-                if len(self.domains[xi]) == 0:
-                    return False
+    return neighbors
 
-                for xk in self.get_neighbors(xi):
-                    if xk != xj:
-                        queue.append((xk, xi))
 
-    def revise(self, xi, xj):
-        revised = False
+def propagate_constraints(domains, board):
+    for domain_key in domains.keys():
+        if board[domain_key[0]][domain_key[1]] == 0:
+            for num in range(1, 10):
+                if not is_valid_number(num, domain_key, board):
+                    domains[domain_key].discard(num)
 
-        for x in set(self.domains[xi]):
-            if not any(self.is_valid_number(x, (xi[0], xi[1])) for xi in self.neighbors[xj]):
-                self.domains[xi].remove(x)
-                revised = True
 
-        return revised
+def propagate_constraints_AC(board, domains, neighbors):
+    queue = [(var, neighbor)
+             for var in domains for neighbor in get_neighbors(var)]
+    while queue:
+        (xi, xj) = queue.pop(0)
 
-    def forward_checking(self, row, col, num):
-        for i in range(9):
-            if (row, i) in self.domains:
-                self.domains[(row, i)].discard(num)
-            if (i, col) in self.domains:
-                self.domains[(i, col)].discard(num)
-
-        box_x = col // 3
-        box_y = row // 3
-
-        for i in range(box_y*3, box_y*3 + 3):
-            for j in range(box_x*3, box_x*3 + 3):
-                if (i, j) in self.domains:
-                    self.domains[(i, j)].discard(num)
-
-    def is_valid_number(self, num, pos):
-        row, col = pos
-
-        for i in range(9):
-            if self.board[row][i] == num or self.board[i][col] == num:
+        if revise(xi, xj, board, domains, neighbors):
+            if len(domains[xi]) == 0:
                 return False
+
+            for xk in get_neighbors(xi):
+                if xk != xj:
+                    queue.append((xk, xi))
+
+
+def revise(xi, xj, board, domains, neighbors):
+    revised = False
+
+    for x in set(domains[xi]):
+        if not any(is_valid_number(x, (xi[0], xi[1]), board) for xi in neighbors[xj]):
+            domains[xi].remove(x)
+            revised = True
+
+    return revised
+
+
+def forward_checking(row, col, num, domains):
+    for i in range(9):
+        if (row, i) in domains:
+            domains[(row, i)].discard(num)
+        if (i, col) in domains:
+            domains[(i, col)].discard(num)
+
+    box_x = col // 3
+    box_y = row // 3
+
+    for i in range(box_y*3, box_y*3 + 3):
+        for j in range(box_x*3, box_x*3 + 3):
+            if (i, j) in domains:
+                domains[(i, j)].discard(num)
+
+
+def is_valid_number(num, pos, board):
+    row, col = pos
+
+    for i in range(9):
+        if board[row][i] == num or board[i][col] == num:
+            return False
+
+    box_x = col // 3
+    box_y = row // 3
+
+    for i in range(box_y * 3, box_y * 3 + 3):
+        for j in range(box_x * 3, box_x * 3 + 3):
+            if board[i][j] == num:
+                return False
+
+    return True
+
+
+def find_empty_cell(board):
+    for i in range(len(board)):
+        for j in range(len(board[0])):
+            if board[i][j] == 0:
+                return (i, j)
+
+    return None
+
+
+def find_empty_cell_mrv(domains, board):
+    min_domain_size = float('inf')
+    best_cell = None
+
+    for cell in domains:
+        if board[cell[0]][cell[1]] == 0:
+            domain_size = len(domains[cell])
+
+            if domain_size < min_domain_size:
+                min_domain_size = domain_size
+                best_cell = cell
+
+    return best_cell
+
+
+def order_domains_lcv(var, domains):
+    def count_constraints(value):
+        count = 0
+        row, col = var
+
+        for i in range(9):
+            if (row, i) in domains and value in domains[(row, i)]:
+                count += 1
+
+        for i in range(9):
+            if (i, col) in domains and value in domains[(i, col)]:
+                count += 1
 
         box_x = col // 3
         box_y = row // 3
 
         for i in range(box_y * 3, box_y * 3 + 3):
             for j in range(box_x * 3, box_x * 3 + 3):
-                if self.board[i][j] == num:
-                    return False
+                if (i, j) in domains and value in domains[(i, j)]:
+                    count += 1
 
+        return count
+
+    return sorted(domains[var], key=count_constraints)
+
+
+def solve_backtrack(board):
+    empty_cell = find_empty_cell(board)
+
+    if not empty_cell:
         return True
+    else:
+        row, col = empty_cell
 
-    def find_empty_cell(self):
-        for i in range(len(self.board)):
-            for j in range(len(self.board[0])):
-                if self.board[i][j] == 0:
-                    return (i, j)
+    for i in range(1, 10):
+        if is_valid_number(i, (row, col), board):
+            board[row][col] = i
 
-        return None
+            if solve_backtrack(board):
+                return True
 
-    def find_empty_cell_mrv(self):
-        min_domain_size = float('inf')
-        best_cell = None
+            board[row][col] = 0
 
-        for cell in self.domains:
-            if self.board[cell[0]][cell[1]] == 0:
-                domain_size = len(self.domains[cell])
+    return False
 
-                if domain_size < min_domain_size:
-                    min_domain_size = domain_size
-                    best_cell = cell
 
-        return best_cell
+def solve_advanced(board, domains, neighbors, count_solutions=False):
+    empty_cell = find_empty_cell_mrv(domains, board)
 
-    def order_domains_lcv(self, var):
-        def count_constraints(value):
-            count = 0
-            row, col = var
+    if not empty_cell:
+        return 1 if count_solutions else True
 
-            for i in range(9):
-                if (row, i) in self.domains and value in self.domains[(row, i)]:
-                    count += 1
+    row, col = empty_cell
+    solution_count = 0
 
-            for i in range(9):
-                if (i, col) in self.domains and value in self.domains[(i, col)]:
-                    count += 1
+    for num in order_domains_lcv((row, col), domains):
+        if is_valid_number(num, (row, col), board):
+            board[row][col] = num
+            # propagate_constraints(domains, board)
+            propagate_constraints_AC(board, domains, neighbors)
+            forward_checking(row, col, num, domains)
 
-            box_x = col // 3
-            box_y = row // 3
-
-            for i in range(box_y * 3, box_y * 3 + 3):
-                for j in range(box_x * 3, box_x * 3 + 3):
-                    if (i, j) in self.domains and value in self.domains[(i, j)]:
-                        count += 1
-
-            return count
-
-        return sorted(self.domains[var], key=count_constraints)
-
-    def solve_backtrack(self):
-        empty_cell = self.find_empty_cell()
-
-        if not empty_cell:
-            return True
-        else:
-            row, col = empty_cell
-
-        for i in range(1, 10):
-            if self.is_valid_number(i, (row, col)):
-                self.board[row][col] = i
-
-                if self.solve_backtrack():
+            if count_solutions:
+                solution_count += solve_advanced(board,
+                                                 domains, neighbors, count_solutions)
+                if solution_count > 1:
+                    return solution_count
+            else:
+                if solve_advanced(board,
+                                  domains, neighbors):
                     return True
 
-                self.board[row][col] = 0
+            board[row][col] = 0
+            domains = initialize_domains(board)
+            # propagate_constraints(domains, board)
+            propagate_constraints_AC(board, domains, neighbors)
 
-        return False
-
-    def solve_advanced(self, count_solutions=False):
-        empty_cell = self.find_empty_cell_mrv()
-
-        if not empty_cell:
-            return 1 if count_solutions else True
-
-        row, col = empty_cell
-        solution_count = 0
-
-        for num in self.order_domains_lcv((row, col)):
-            if self.is_valid_number(num, (row, col)):
-                self.board[row][col] = num
-                # self.propagate_constraints()
-                self.propagate_constraints_AC()
-                self.forward_checking(row, col, num)
-
-                if count_solutions:
-                    solution_count += self.solve_advanced(count_solutions)
-                    if solution_count > 1:
-                        return solution_count
-                else:
-                    if self.solve_advanced():
-                        return True
-
-                self.board[row][col] = 0
-                self.domains = self.initialize_domains()
-                # self.propagate_constraints()
-                self.propagate_constraints_AC()
-
-        return solution_count if count_solutions else False
+    return solution_count if count_solutions else False
