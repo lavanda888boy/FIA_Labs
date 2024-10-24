@@ -1,6 +1,6 @@
 import random
 from sudoku_solver import solve_backtrack, initialize_domains, initialize_neighbors
-from sudoku_validator import check_multiple_solutions
+from sudoku_validator import check_multiple_solutions, MINIMAL_GIVENS
 
 
 def generate_full_board():
@@ -22,16 +22,21 @@ def remove_numbers(board, num_holes):
 
 
 def generate_sudoku(num_holes=40):
+    if num_holes > 81 - MINIMAL_GIVENS:
+        raise ValueError(f"Number of holes must be less than {
+                         81 - MINIMAL_GIVENS}.")
+
     board = generate_full_board()
 
     while True:
         board_copy = [row.copy() for row in board]
+        board_check_copy = [row.copy() for row in board]
         remove_numbers(board, num_holes)
 
         domains = initialize_domains(board)
         neighbors = initialize_neighbors()
 
-        if check_multiple_solutions(board, domains, neighbors):
+        if check_multiple_solutions(board_check_copy, domains, neighbors):
             return board
         else:
             board = board_copy

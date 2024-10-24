@@ -212,8 +212,8 @@ def solve_advanced(board, domains, neighbors, count_solutions=False):
     for num in order_domains_lcv((row, col), domains):
         if is_valid_number(num, (row, col), board):
             board[row][col] = num
-            # propagate_constraints(domains, board)
-            propagate_constraints_AC(board, domains, neighbors)
+            local_domains = {key: value.copy()
+                             for key, value in domains.items()}
             forward_checking(row, col, num, domains)
 
             if count_solutions:
@@ -227,8 +227,6 @@ def solve_advanced(board, domains, neighbors, count_solutions=False):
                     return True
 
             board[row][col] = 0
-            domains = initialize_domains(board)
-            # propagate_constraints(domains, board)
-            propagate_constraints_AC(board, domains, neighbors)
+            domains = local_domains
 
     return solution_count if count_solutions else False

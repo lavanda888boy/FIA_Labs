@@ -126,4 +126,4 @@ def check_multiple_solutions(board, domains, neighbors):
     if solution_count > 1:
         return False, "Multiple solutions found."
 
-    return True, "The board has a unique solution."
+    return True, ""
