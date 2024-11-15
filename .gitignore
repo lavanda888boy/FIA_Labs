@@ -3,8 +3,3 @@ __pycache__
 .venv
 *.pdf
 *.jpg
-
-Lab4_Learning/data.csv
-
-Lab5_ImageProcessing/images
-Lab5_ImageProcessing/labels.csv
