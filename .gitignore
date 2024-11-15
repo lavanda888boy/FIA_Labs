@@ -2,5 +2,9 @@ __pycache__
 .ipynb_checkpoints
 .venv
 *.pdf
+*.jpg
+
+Lab4_Learning/data.csv
 
 Lab5_ImageProcessing/images
+Lab5_ImageProcessing/labels.csv
