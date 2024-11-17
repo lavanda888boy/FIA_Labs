@@ -1,0 +1,5 @@
+train: opencv_images/train.txt
+val: opencv_images/validation.txt
+
+nc: 2
+names: ['face', 'eye']

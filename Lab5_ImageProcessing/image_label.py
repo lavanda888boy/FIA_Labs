@@ -3,18 +3,22 @@ import csv
 from PIL import Image
 import matplotlib.pyplot as plt
 
-IMAGES_FOLDER = 'tensorflow_images'
-IMAGE_LABELS = 'labels.csv'
+
+IMAGES_FOLDER = './tensorflow_images'
+IMAGE_LABELS = './tensorflow_images/labels.csv'
 
 
 def label_images():
     print("Enter y/n for each image whether it is suitable for passport or not.\n")
 
-    with open(IMAGE_LABELS, mode='w', newline='') as file:
+    with open(IMAGE_LABELS, mode='a', newline='') as file:
         writer = csv.writer(file)
         writer.writerow(['ImageName', 'Label'])
 
         for image_name in os.listdir(IMAGES_FOLDER):
+            if image_name.endswith(('.jpg', '.png')) is False:
+                continue
+
             image_path = os.path.join(IMAGES_FOLDER, image_name)
 
             image = Image.open(image_path)
