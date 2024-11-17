@@ -3,7 +3,7 @@ import csv
 from PIL import Image
 import matplotlib.pyplot as plt
 
-IMAGES_FOLDER = 'images'
+IMAGES_FOLDER = 'tensorflow_images'
 IMAGE_LABELS = 'labels.csv'
 
 

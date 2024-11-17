@@ -4,6 +4,5 @@ __pycache__
 *.pdf
 *.jpg
 
-Lab4_Learning/data.csv
-Lab5_ImageProcessing/images
-Lab5_ImageProcessing/labels.csv
+Lab5_ImageProcessing/opencv_images
+Lab5_ImageProcessing/tensorflow_images
