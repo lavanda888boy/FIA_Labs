@@ -40,5 +40,5 @@ def sharpen_image(image_path, blur_kernel_size=(7, 7), alpha=2,
 
 
 if __name__ == "__main__":
-    blur_image('example.jpg')
-    sharpen_image('example.jpg')
+    blur_image('example_images/fiat.jpg')
+    sharpen_image('example_images/fiat.jpg')

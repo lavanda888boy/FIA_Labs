@@ -3,10 +3,12 @@ __pycache__
 .venv
 *.pdf
 *.jpg
+*.png
 *.cache
 
 Lab5_ImageProcessing/opencv_images
 Lab5_ImageProcessing/tensorflow_images
 Lab5_ImageProcessing/test_dataset
 Lab5_ImageProcessing/results
+Lab5_ImageProcessing/example_images
 Lab5_ImageProcessing/*.pt
