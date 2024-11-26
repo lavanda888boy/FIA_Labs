@@ -2,8 +2,6 @@ __pycache__
 .ipynb_checkpoints
 .venv
 *.pdf
-*.jpg
-*.png
 *.cache
 
 Lab5_ImageProcessing/opencv_images
