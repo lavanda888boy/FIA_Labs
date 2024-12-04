@@ -9,3 +9,5 @@ Lab5_ImageProcessing/tensorflow_images
 Lab5_ImageProcessing/test_dataset
 Lab5_ImageProcessing/results
 Lab5_ImageProcessing/*.pt
+
+Lab6_NLP_ChatBots/.env
