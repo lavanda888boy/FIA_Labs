@@ -7,13 +7,13 @@ from torch.nn.utils.rnn import pad_sequence
 from sklearn.model_selection import train_test_split
 
 
-INPUT_DIM = 1000
-OUTPUT_DIM = 1000
-HIDDEN_DIM = 256
-EMBED_DIM = 128
+INPUT_DIM = 550
+OUTPUT_DIM = 550
+HIDDEN_DIM = 128
+EMBED_DIM = 64
 NUM_LAYERS = 2
 LEARNING_RATE = 0.001
-EPOCHS = 200
+EPOCHS = 300
 BATCH_SIZE = 32
 MAX_LEN = 20
 
@@ -60,11 +60,11 @@ class ChatDataset(Dataset):
 
 class Encoder(nn.Module):
 
-    def __init__(self, input_dim, embed_dim, hidden_dim, num_layers):
+    def __init__(self, input_dim, embed_dim, hidden_dim, num_layers, dropout=0.5):
         super(Encoder, self).__init__()
         self.embedding = nn.Embedding(input_dim, embed_dim)
         self.lstm = nn.LSTM(embed_dim, hidden_dim,
-                            num_layers, batch_first=True)
+                            num_layers, batch_first=True, dropout=dropout)
 
     def forward(self, x):
         embedded = self.embedding(x)
@@ -74,11 +74,11 @@ class Encoder(nn.Module):
 
 class Decoder(nn.Module):
 
-    def __init__(self, output_dim, embed_dim, hidden_dim, num_layers):
+    def __init__(self, output_dim, embed_dim, hidden_dim, num_layers, dropout=0.5):
         super(Decoder, self).__init__()
         self.embedding = nn.Embedding(output_dim, embed_dim)
         self.lstm = nn.LSTM(embed_dim, hidden_dim,
-                            num_layers, batch_first=True)
+                            num_layers, batch_first=True, dropout=dropout)
         self.fc = nn.Linear(hidden_dim, output_dim)
 
     def forward(self, x, hidden, cell):
@@ -147,7 +147,7 @@ decoder = Decoder(OUTPUT_DIM, EMBED_DIM, HIDDEN_DIM, NUM_LAYERS).to(device)
 model = Seq2Seq(encoder, decoder, device).to(device)
 
 criterion = nn.CrossEntropyLoss(ignore_index=0)
-optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
+optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE, weight_decay=1e-5)
 
 
 def train_model(model, train_loader, val_loader, criterion, optimizer):
@@ -186,25 +186,7 @@ def train_model(model, train_loader, val_loader, criterion, optimizer):
               len(train_loader):.4f}, Val Loss: {val_loss/len(val_loader):.4f}")
 
 
-def predict(model, question, tokenizer, max_len=MAX_LEN):
-    model.eval()
-    src = torch.tensor([1] + tokenizer.encode(question) +
-                       [2]).unsqueeze(0).to(device)
-    hidden, cell = model.encoder(src)
-    input_token = torch.tensor([1]).to(device)
-    result = []
-    for _ in range(max_len):
-        output, hidden, cell = model.decoder(input_token, hidden, cell)
-        pred_token = output.argmax(1).item()
-        if pred_token == 2:  # <EOS>
-            break
-        result.append(pred_token)
-        input_token = torch.tensor([pred_token]).to(device)
-    return tokenizer.decode(result)
-
-
 if __name__ == "__main__":
     train_model(model, train_loader, val_loader, criterion, optimizer)
     torch.save(model.state_dict(), './models/moldova_seq2seq_torch.pth')
     torch.save(tokenizer, './models/moldova_tokenizer.pth')
-    print(predict(model, "Which shopping malls are in Chisinau?", tokenizer))

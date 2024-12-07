@@ -2,7 +2,7 @@ import pandas as pd
 import tensorflow as tf
 from sklearn.model_selection import train_test_split
 
-data = pd.read_csv('questions.csv')
+data = pd.read_csv('dataset.csv')
 
 questions = data["Question"].values
 answers = data["Answer"].values
