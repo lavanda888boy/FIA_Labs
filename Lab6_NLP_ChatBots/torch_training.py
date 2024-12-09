@@ -13,7 +13,7 @@ HIDDEN_DIM = 256
 EMBED_DIM = 64
 NUM_LAYERS = 1
 LEARNING_RATE = 0.001
-EPOCHS = 180
+EPOCHS = 200
 BATCH_SIZE = 32
 MAX_LEN = 20
 
@@ -97,7 +97,7 @@ class Seq2Seq(nn.Module):
         self.decoder = decoder
         self.device = device
 
-    def forward(self, src, trg, teacher_forcing_ratio=0.5):
+    def forward(self, src, trg, teacher_forcing_ratio=0.4):
         batch_size = trg.shape[0]
         trg_len = trg.shape[1]
         trg_vocab_size = self.decoder.fc.out_features

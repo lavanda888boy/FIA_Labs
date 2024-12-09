@@ -51,8 +51,11 @@ def send_welcome(message):
         "Welcome to this chatbot!\n\n"
         "You can ask any question about Moldova and in particular its capital - Chisinau!\n\n"
         "For example, you can ask:\n"
-        "- What is the climate in Moldova?\n"
-        "- Where can I watch movies in Chisinau?")
+        "- What public health facilities are in Chisinau?\n"
+        "- How much does public transport in Chisinau cost?\n"
+        "- Is ecological transport available in Chisinau?\n"
+        "- Where do i solve residence permit issues?\n"
+        "- What medical labs are in Chisinau?")
 
 
 @bot.message_handler(func=lambda message: message.text is not None and len(message.text) > 5 and '/' not in message.text)
