@@ -47,14 +47,12 @@ bot = telebot.TeleBot(os.getenv('TOKEN'))
 @bot.message_handler(commands=['start', 'help'])
 def send_welcome(message):
     bot.reply_to(
-        message, """Welcome to this chatbot!
-                
-        You can ask any question about Moldova and in particular its capital - Chisinau!
-                
-        For example, you can ask:
-            - What is the climate in Moldova?
-            - Where can I watch movies in Chisinau?
-        """)
+        message,
+        "Welcome to this chatbot!\n\n"
+        "You can ask any question about Moldova and in particular its capital - Chisinau!\n\n"
+        "For example, you can ask:\n"
+        "- What is the climate in Moldova?\n"
+        "- Where can I watch movies in Chisinau?")
 
 
 @bot.message_handler(func=lambda message: message.text is not None and len(message.text) > 5 and '/' not in message.text)

@@ -7,13 +7,13 @@ from torch.nn.utils.rnn import pad_sequence
 from sklearn.model_selection import train_test_split
 
 
-INPUT_DIM = 550
-OUTPUT_DIM = 550
-HIDDEN_DIM = 128
+INPUT_DIM = 700
+OUTPUT_DIM = 700
+HIDDEN_DIM = 256
 EMBED_DIM = 64
-NUM_LAYERS = 2
+NUM_LAYERS = 1
 LEARNING_RATE = 0.001
-EPOCHS = 300
+EPOCHS = 350
 BATCH_SIZE = 32
 MAX_LEN = 20
 
@@ -60,11 +60,11 @@ class ChatDataset(Dataset):
 
 class Encoder(nn.Module):
 
-    def __init__(self, input_dim, embed_dim, hidden_dim, num_layers, dropout=0.5):
+    def __init__(self, input_dim, embed_dim, hidden_dim, num_layers):
         super(Encoder, self).__init__()
         self.embedding = nn.Embedding(input_dim, embed_dim)
         self.lstm = nn.LSTM(embed_dim, hidden_dim,
-                            num_layers, batch_first=True, dropout=dropout)
+                            num_layers, batch_first=True)
 
     def forward(self, x):
         embedded = self.embedding(x)
@@ -74,11 +74,11 @@ class Encoder(nn.Module):
 
 class Decoder(nn.Module):
 
-    def __init__(self, output_dim, embed_dim, hidden_dim, num_layers, dropout=0.5):
+    def __init__(self, output_dim, embed_dim, hidden_dim, num_layers):
         super(Decoder, self).__init__()
         self.embedding = nn.Embedding(output_dim, embed_dim)
         self.lstm = nn.LSTM(embed_dim, hidden_dim,
-                            num_layers, batch_first=True, dropout=dropout)
+                            num_layers, batch_first=True)
         self.fc = nn.Linear(hidden_dim, output_dim)
 
     def forward(self, x, hidden, cell):
@@ -147,7 +147,7 @@ decoder = Decoder(OUTPUT_DIM, EMBED_DIM, HIDDEN_DIM, NUM_LAYERS).to(device)
 model = Seq2Seq(encoder, decoder, device).to(device)
 
 criterion = nn.CrossEntropyLoss(ignore_index=0)
-optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE, weight_decay=1e-5)
+optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
 
 def train_model(model, train_loader, val_loader, criterion, optimizer):
