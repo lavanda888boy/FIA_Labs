@@ -40,25 +40,27 @@ def prepare_answer(model, question, tokenizer):
     return tokenizer.decode(result)
 
 
-load_dotenv()
-bot = telebot.TeleBot(os.getenv('TOKEN'))
+# load_dotenv()
+# bot = telebot.TeleBot(os.getenv('TOKEN'))
 
 
-@bot.message_handler(commands=['start', 'help'])
-def send_welcome(message):
-    bot.reply_to(
-        message,
-        "Welcome to this chatbot!\n\n"
-        "You can ask any question about Moldova and in particular its capital - Chisinau!\n\n"
-        "For example, you can ask:\n"
-        "- What is the climate in Moldova?\n"
-        "- Where can I watch movies in Chisinau?")
+# @bot.message_handler(commands=['start', 'help'])
+# def send_welcome(message):
+#     bot.reply_to(
+#         message,
+#         "Welcome to this chatbot!\n\n"
+#         "You can ask any question about Moldova and in particular its capital - Chisinau!\n\n"
+#         "For example, you can ask:\n"
+#         "- What is the climate in Moldova?\n"
+#         "- Where can I watch movies in Chisinau?")
 
 
-@bot.message_handler(func=lambda message: message.text is not None and len(message.text) > 5 and '/' not in message.text)
-def send_answer(message):
-    answer = prepare_answer(model, message.text, tokenizer)
-    bot.reply_to(message, answer)
+# @bot.message_handler(func=lambda message: message.text is not None and len(message.text) > 5 and '/' not in message.text)
+# def send_answer(message):
+#     answer = prepare_answer(model, message.text, tokenizer)
+#     bot.reply_to(message, answer)
 
 
-bot.infinity_polling()
+# bot.infinity_polling()
+
+print(prepare_answer(model, "What are taxi options in Moldova?", tokenizer))
